@@ -1,46 +1,17 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <unistd.h>
-#include <string.h>
-#include <errno.h>
-#include <limits.h>
-#include <time.h>
-#include <assert.h>
-#include <stdbool.h>
+#include "common.h"
+#include "init.h"
 
-#define RANGE (1000)
-#define NUM_VEC (4)
-#define DEBUG (0)
-#define ITER (50)
 
-#define debug(...) \
-  do { if (DEBUG) fprintf(stderr,__VA_ARGS__); } while(0)
 
 static bool f = false;
 static char* prog;
 
-struct options {
-  int n;
-  int m;
-  char *file;
-};
-
-static struct options options;
 
 void update(double **primary, double **secondary, int j, int k, double **vectors);
-
-void init_rand(double **primary, double **secondary, double **vectors);
-
-void init_file(double **primary, double **secondary, double **vectors);
 
 void free_resources(double **primary, double **secondary, double **vectors);
 
 void parse_args(int argc, char **argv);
-
-void bail_out(int eval, const char *fmt, ...);
-
-double rand_double();
 
 void print_all(double **primary, double **secondary, double **vectors);
 
@@ -73,7 +44,7 @@ int main(int argc, char **argv){
   }
   print_all(primary, secondary, vectors);
 
-  for (int i = 0; i < ITER; i++){
+  for (int i = 0; i < options.iter; i++){
     for(int j = 0; j < options.n; j++){
       for(int k = 0; k < options.m; k++){
         update(primary, secondary, j, k, vectors);
@@ -143,7 +114,7 @@ void parse_args(int argc, char **argv){
   debug("parse args\n");
   char *endptr;
 
-  if (argc < 3 || argc > 5){
+  if (argc < 4 || argc > 6){
     usage();
   }
 
@@ -170,6 +141,18 @@ void parse_args(int argc, char **argv){
   }
 
   options.m = (int)columns;
+  
+  long iterations = strtol(argv[3], &endptr, 0);
+
+  if (endptr == argv[3]){
+    bail_out(EXIT_FAILURE, "strtol iterations");
+  }
+
+  if (columns > INT_MAX){
+    bail_out(EXIT_FAILURE, "iterations number too big");
+  }
+
+  options.iter = (int)iterations;
   char c;
   while ((c = getopt(argc, argv, "f:")) != -1){
     switch(c){
@@ -187,141 +170,7 @@ void parse_args(int argc, char **argv){
         assert(0);
     }
   }
-}
-
-void init_rand(double **primary, double **secondary, double **vectors){
-  debug("init\n");
-  srand((unsigned int)time((time_t*) NULL));
-
-  for (int i = 0; i < options.n; i++){
-    primary[i] = malloc(options.m * sizeof(double));
-    if (primary[i] == NULL){
-      bail_out(EXIT_FAILURE, "malloc primary[%d]", i);
-    }
-    secondary[i] = calloc(options.m, sizeof(double));
-    if (secondary[i] == NULL){
-      bail_out(EXIT_FAILURE, "malloc secondary[%d]", i);
-    }
-    for (int j = 0; j < options.m; j++){
-      primary[i][j] = rand_double();
-    }
-  }
-
-  int vec_len = 0;
-  for (int i = 0; i < NUM_VEC; i++){
-    if (i%2 == 0){
-      vec_len = options.m;
-    }
-    else{
-      vec_len = options.n;
-    }
-    vectors[i] = malloc(vec_len * sizeof(double));
-    if (vectors[i] == NULL){
-      bail_out(EXIT_FAILURE, "malloc vectors[%d]\n", i);
-    }
-    for (int j = 0; j < vec_len; j++){
-      vectors[i][j] = rand_double();
-    }
-  }
-  debug("in init: %f", vectors[0][0]);
-}
-
-void init_file(double **primary, double **secondary, double **vectors){
-
-  FILE* input = fopen(options.file, "r");
-  if(input == NULL){
-    bail_out(EXIT_FAILURE, "File does not exist!");
-  }
-
-
-  for (int i = 0; i < 4; i++){
-    int vec_len;
-    printf("i : %d \n", i);
-    if (i%2 == 0){
-      vec_len = options.m;
-    }
-    else{
-      vec_len = options.n;
-    }
-    
-    printf("i : %d \n", i);
-    printf("veclen : %d\n", vec_len);
-    
-    vectors[i] = malloc(vec_len * sizeof(double)); 
-    if (vectors[i] == NULL){
-      bail_out(EXIT_FAILURE, "malloc vectors[%d]\n", i);
-    }
-    printf("i : %d \n", i);
-    int len = 4096;
-    char *line = malloc(len * sizeof(char));
-    getline(&line, (size_t *)&len, input);
-    if (line == NULL){
-      bail_out(EXIT_FAILURE, "getline");
-    }
-    printf("after getline\n");
-    printf("i : %d \n", i);
-    char *token = strtok(line, " ");
-    if (token == NULL){
-      bail_out(EXIT_FAILURE, "strtok");
-    }
-    printf("i : %d \n", i);
-    int j = 0;
-    do{
-      if (j >= vec_len){
-        break;
-      }
-      char *endptr = NULL;
-      double val = strtod(token, &endptr);
-      printf("%d : %s\n", j, token);
-      if (token == endptr){
-        bail_out(EXIT_FAILURE, "file parsing failed!");
-      } 
-      if (j >= vec_len){
-        break;
-      }
-      vectors[i][j] = val;
-      j++;
-    printf("i : %d \n", i);
-    } while((token = strtok(NULL, " ")) != NULL);
-    printf("i : %d \n", i);
-    printf("\n\n");
-  }
-
-  for (int i = 0; i < options.n; i++){
-    primary[i] = malloc(options.m * sizeof(double));
-    if (primary[i] == NULL){
-      bail_out(EXIT_FAILURE, "malloc primary[%d]", i);
-    }
-    secondary[i] = calloc(options.m, sizeof(double));
-    if (secondary[i] == NULL){
-      bail_out(EXIT_FAILURE, "malloc secondary[%d]", i);
-    }
-    
-    char *line = NULL;
-    int len = 0;
-    getline(&line, (size_t *)&len, input);
-    if (line == NULL){
-      bail_out(EXIT_FAILURE, "getline");
-    }
-    char *token = strtok(line, " ");
-    if (token == NULL){
-      bail_out(EXIT_FAILURE, "strtok");
-    }
-    int j = 0;
-    do{
-      if (j >= options.m){
-        break;
-      } 
-      char *endptr = NULL;
-      double val = strtod(token, &endptr);
-      if (token == endptr){
-        bail_out(EXIT_FAILURE, "file parsing failed!");
-      } 
-
-      primary[i][j] = val;
-      j++;
-    } while((token = strtok(NULL, " ")) != NULL);
-  }
+  printf("%s\n", options.file);
 }
 
 void free_resources(double **primary, double **secondary, double **vectors){
@@ -355,13 +204,6 @@ void bail_out(int eval, const char *fmt, ...){
   exit(eval);
 }
 
-double rand_double() 
-{
-  double range = RANGE; 
-  double div = RAND_MAX / range;
-  return (rand() / div);
-}
-
 void print_all(double **primary, double **secondary, double **vectors){
   for (int i = 0; i < NUM_VEC; i++){
     if (i%2 == 0){
@@ -387,5 +229,5 @@ void print_all(double **primary, double **secondary, double **vectors){
 }
 
 void usage(){
-  bail_out(EXIT_FAILURE, "Usage: stencil rows columns [-f input]");
+  bail_out(EXIT_FAILURE, "Usage: stencil rows columns iterations [-f input]");
 }
