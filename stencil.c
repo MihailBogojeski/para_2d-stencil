@@ -208,12 +208,12 @@ void print_all(double **primary, double **secondary, double **vectors){
   for (int i = 0; i < NUM_VEC; i++){
     if (i%2 == 0){
       for (int j = 0; j < options.m; j++){
-        printf("%04.4f ", vectors[i][j]);
+        printf("%8.4f ", vectors[i][j]);
       }
     }
     else{
       for (int j = 0; j < options.n; j++){
-        printf("%04.4f ", vectors[i][j]);
+        printf("%8.4f ", vectors[i][j]);
       }
     }
     printf("\n\n");
@@ -221,7 +221,7 @@ void print_all(double **primary, double **secondary, double **vectors){
 
   for (int i = 0; i < options.n; i++){
     for (int j = 0; j < options.m; j++){
-      printf("%04.4f ", primary[i][j]);
+      printf("%8.4f ", primary[i][j]);
     }
     printf("\n");
   }
