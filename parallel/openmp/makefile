@@ -1,6 +1,6 @@
 CC = gcc
 DEFS = -D_BSD_SOURCE -D_XOPEN_SOURCE=500 -D_GNU_SOURCE
-CFLAGS = -std=c99 -pedantic -Wall -fopenmp -O3 -g -c $(DEFS)
+CFLAGS = -std=c99 -pedantic -Wall -fopenmp -Wextra -pedantic-errors -O3 -g -c $(DEFS)
 OBJFILES = stencil.o init.o iterate.o
 ROW_OBJFILES = stencil.o init.o iterate_row.o
 COLUMN_OBJFILES = stencil.o init.o iterate_column.o

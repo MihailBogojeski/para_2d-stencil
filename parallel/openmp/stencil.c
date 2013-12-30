@@ -18,7 +18,7 @@ static void print_all(double **primary, double **secondary, double **vectors);
 static void usage();
 
 int main(int argc, char **argv){
-
+ printf("HELLLLLLLLLO!"); 
   prog = argv[0];
 
   parse_args(argc, argv);

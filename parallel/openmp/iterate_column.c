@@ -1,16 +1,48 @@
 #include "common.h"
-
+#define COLUMSPARALLELFLAG
+#define ROWSPARALLELFLAG
+//#define random_FLAG
 static void update(double **primary, double **secondary, int j, int k, double **vectors);
 
 void iterate(double **primary, double **secondary, double **vectors)
 {
- for (int i = 0; i < options.iter; i++){
-    for(int j = 0; j < options.n; j++){
-      for(int k = 0; k < options.m; k++){
-        update(primary, secondary, j, k, vectors);
+
+
+//Iterations over the whole matrix
+for (int i = 0; i < options.iter;  i++){
+//Iterations over rows
+    #if defined (ROWS_PARALLEL_FLAG)
+     #pragma omp parallel
+        { 
+     #endif
+    #if defined(ROWS_PARALLEL_FLAG) 
+      #pragma omp for 
+    #endif
+    for(int k = 0; k < options.m; k++){
+        //Iterations over columns
+        #if defined(COLUMS_PARALLEL_FLAG) && !defined(ROWS_PARALLEL_FLAG)
+	  #pragma omp parallel
+          { 
+	#endif
+
+        #if defined(COLUMS_PARALLEL_FLAG)
+          #pragma omp for 
+        #endif
+        for(int j = 0; j < options.n; j++){
+            update(primary, secondary, j, k, vectors);
+        }
+        #if defined(COLUMS_PARALLEL_FLAG) && !defined(ROWS_PARALLEL_FLAG)
+          }
+        #endif
+    }  
+
+    #if defined(ROWS_PARALLEL_FLAG) 
       }
-    }
-    double **temp = primary;
+    #endif
+ 
+}
+
+   double **temp = primary;
     primary = secondary;
     secondary = temp;
 
@@ -22,7 +54,7 @@ void iterate(double **primary, double **secondary, double **vectors)
     }
     debug("\n\n");
 
-  }
+  
 }
 
 static void update(double **primary, double **secondary, int j, int k, double **vectors){
