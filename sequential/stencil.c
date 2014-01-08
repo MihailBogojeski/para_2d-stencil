@@ -1,5 +1,6 @@
 #include "common.h"
 #include "init.h"
+#include <sys/time.h>
 
 
 
@@ -20,7 +21,7 @@ void usage();
 int main(int argc, char **argv){
 
   prog = argv[0];
-
+  struct timeval start, finish;
   parse_args(argc, argv);
 
   double **primary = malloc(options.n * sizeof(double*));
@@ -42,8 +43,10 @@ int main(int argc, char **argv){
   else{
     init_rand (primary, secondary, vectors);
   }
-  print_all(primary, secondary, vectors);
-
+  // print_all(primary, secondary, vectors);
+  
+  fprintf(stderr, "init finished\n");
+  gettimeofday(&start,NULL);
   for (int i = 0; i < options.iter; i++){
     for(int j = 0; j < options.n; j++){
       for(int k = 0; k < options.m; k++){
@@ -53,7 +56,7 @@ int main(int argc, char **argv){
     double **temp = primary;
     primary = secondary;
     secondary = temp;
-
+    /*
     for (int i = 0; i < options.n; i++){
       for (int j = 0; j < options.m; j++){
         debug("%3.4f ", primary[i][j]);
@@ -61,16 +64,20 @@ int main(int argc, char **argv){
       debug("\n");
     }
     debug("\n\n");
-
+    */
   }
-
+  gettimeofday(&finish,NULL);
+  fprintf(stderr, "loop finished\n");
+  long usec_diff = (finish.tv_sec - start.tv_sec)*1000000 + (finish.tv_usec - start.tv_usec);
+  fprintf(stderr,"loop time = %lu\n", usec_diff);
+/*
   for (int i = 0; i < options.n; i++){
     for (int j = 0; j < options.m; j++){
       printf("%3.4f ", primary[i][j]);
     }
     printf("\n");
   }
-
+*/
   free_resources(primary, secondary, vectors);
 }
 

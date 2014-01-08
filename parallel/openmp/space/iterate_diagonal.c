@@ -1,25 +1,19 @@
 #include "common.h"
-#include <omp.h>
 
 static void update(double **primary, double **secondary, int j, int k, double **vectors);
 
 void iterate(double **primary, double **secondary, double **vectors)
 {
-
  for (int i = 0; i < options.iter; i++){
     for(int j = 0; j < options.n; j++){
-      #pragma omp parallel
-      {
-				#pragma omp for nowait
-	      for(int k = 0; k < options.m; k++){
-					update(primary, secondary, j, k, vectors);
-	      }
+      for(int k = 0; k < options.m; k++){
+        update(primary, secondary, j, k, vectors);
       }
     }
     double **temp = primary;
     primary = secondary;
     secondary = temp;
-/*
+
     for (int i = 0; i < options.n; i++){
       for (int j = 0; j < options.m; j++){
         debug("%3.4f ", primary[i][j]);
@@ -27,7 +21,7 @@ void iterate(double **primary, double **secondary, double **vectors)
       debug("\n");
     }
     debug("\n\n");
-*/
+
   }
 }
 
