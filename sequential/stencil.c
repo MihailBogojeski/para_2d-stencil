@@ -14,6 +14,8 @@ void free_resources(double **primary, double **secondary, double **vectors);
 
 void parse_args(int argc, char **argv);
 
+void print_result(double **primary);
+
 void print_all(double **primary, double **secondary, double **vectors);
 
 void usage();
@@ -70,14 +72,9 @@ int main(int argc, char **argv){
   fprintf(stderr, "loop finished\n");
   long usec_diff = (finish.tv_sec - start.tv_sec)*1000000 + (finish.tv_usec - start.tv_usec);
   fprintf(stderr,"loop time = %lu\n", usec_diff);
-/*
-  for (int i = 0; i < options.n; i++){
-    for (int j = 0; j < options.m; j++){
-      printf("%3.4f ", primary[i][j]);
-    }
-    printf("\n");
-  }
-*/
+  
+  print_result(primary);
+  
   free_resources(primary, secondary, vectors);
 }
 
@@ -232,6 +229,15 @@ void print_all(double **primary, double **secondary, double **vectors){
     printf("\n");
   }
   printf("\n\n");
+}
+
+void print_result(double **primary){
+  for (int i = 0; i < options.n; i++){
+    for (int j = 0; j < options.m; j++){
+      printf("%3.4f ", primary[i][j]);
+    }
+    printf("\n");
+  }
 }
 
 void usage(){

@@ -29,16 +29,13 @@ void iterate(double **primary, double **vectors)
     double **temp = primary;
     primary = secondary;
     secondary = temp;
-    /*
-       for (int i = 0; i < options.n; i++){
-       for (int j = 0; j < options.m; j++){
-       debug("%3.4f ", primary[i][j]);
-       }
-       debug("\n");
-       }
-       debug("\n\n");
-       */
   }
+  if (options.iter % 2 == 1){
+    double **temp = primary;
+    primary = secondary;
+    secondary = temp;
+  }
+  
   for (int i = 0; i < options.n; i++){
     free(secondary[i]);
   }
