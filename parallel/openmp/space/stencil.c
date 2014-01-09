@@ -10,16 +10,15 @@ static char* prog;
 
 
 
-static void free_resources(double **primary, double **secondary, double **vectors);
+static void free_resources(double **primary, double **vectors);
 
 static void parse_args(int argc, char **argv);
 
-static void print_all(double **primary, double **secondary, double **vectors);
+static void print_all(double **primary, double **vectors);
 
 static void usage();
 
 int main(int argc, char **argv){
-
   prog = argv[0];
 
   struct timeval start, finish;
@@ -29,26 +28,22 @@ int main(int argc, char **argv){
   if (primary == NULL){
     bail_out(EXIT_FAILURE, "malloc primary");
   }
-  double **secondary = calloc(options.n, sizeof(double*));
-  if (secondary == NULL){
-    bail_out(EXIT_FAILURE, "malloc secondary");
-  }
   double **vectors = malloc(NUM_VEC * sizeof(double*));
   if (vectors == NULL){
     bail_out(EXIT_FAILURE, "malloc vectors");
   }
 
   if (f){
-    init_file(primary, secondary, vectors);
+    init_file(primary, vectors);
   }
   else{
-    init_rand (primary, secondary, vectors);
+    init_rand (primary, vectors);
   }
   // print_all(primary, secondary, vectors);
 
   fprintf(stderr,"init finished\n"); 
   gettimeofday(&start,NULL);
-  iterate(primary, secondary, vectors);
+  iterate(primary, vectors);
   gettimeofday(&finish,NULL);
   fprintf(stderr, "loop finished\n");
   long usec_diff = (finish.tv_sec - start.tv_sec)*1000000 + (finish.tv_usec - start.tv_usec);
@@ -61,7 +56,7 @@ int main(int argc, char **argv){
     printf("\n");
   }
   */
-  free_resources(primary, secondary, vectors);
+  free_resources(primary, vectors);
 }
 
 
@@ -125,17 +120,14 @@ static void parse_args(int argc, char **argv){
         assert(0);
     }
   }
-  printf("%s\n", options.file);
 }
 
-static void free_resources(double **primary, double **secondary, double **vectors){
+static void free_resources(double **primary, double **vectors){
   debug("free_resources\n");
   for (int i = 0; i < options.n; i++){
-    free(secondary[i]);
     free(primary[i]);
   }
   free(primary);
-  free(secondary);
 
   for (int i = 0; i < NUM_VEC; i++){
     free(vectors[i]);
@@ -159,7 +151,7 @@ void bail_out(int eval, const char *fmt, ...){
   exit(eval);
 }
 
-void print_all(double **primary, double **secondary, double **vectors){
+void print_all(double **primary, double **vectors){
   for (int i = 0; i < NUM_VEC; i++){
     if (i%2 == 0){
       for (int j = 0; j < options.m; j++){

@@ -177,7 +177,6 @@ void parse_args(int argc, char **argv){
         assert(0);
     }
   }
-  printf("%s\n", options.file);
 }
 
 void free_resources(double **primary, double **secondary, double **vectors){
