@@ -1,0 +1,5 @@
+./sequential/output
+./sequential/stencil
+./parallel/openmp/output
+./parallel/openmp/row
+

@@ -1,5 +1,7 @@
 #include "common.h"
 #include "init.h"
+#include <sys/time.h>
+#include <omp.h>
 
 
 
@@ -13,6 +15,8 @@ void free_resources(double **primary, double **secondary, double **vectors);
 
 void parse_args(int argc, char **argv);
 
+void print_result(double **primary);
+
 void print_all(double **primary, double **secondary, double **vectors);
 
 void usage();
@@ -20,7 +24,7 @@ void usage();
 int main(int argc, char **argv){
 
   prog = argv[0];
-
+  double start, finish;
   parse_args(argc, argv);
 
   double **primary = malloc(options.n * sizeof(double*));
@@ -42,8 +46,10 @@ int main(int argc, char **argv){
   else{
     init_rand (primary, secondary, vectors);
   }
-  print_all(primary, secondary, vectors);
 
+  
+  fprintf(stderr, "init finished\n");
+  start = omp_get_wtime();
   for (int i = 0; i < options.iter; i++){
     for(int j = 0; j < options.n; j++){
       for(int k = 0; k < options.m; k++){
@@ -53,7 +59,7 @@ int main(int argc, char **argv){
     double **temp = primary;
     primary = secondary;
     secondary = temp;
-
+    /*
     for (int i = 0; i < options.n; i++){
       for (int j = 0; j < options.m; j++){
         debug("%3.4f ", primary[i][j]);
@@ -61,16 +67,16 @@ int main(int argc, char **argv){
       debug("\n");
     }
     debug("\n\n");
-
+    */
   }
-
-  for (int i = 0; i < options.n; i++){
-    for (int j = 0; j < options.m; j++){
-      printf("%3.4f ", primary[i][j]);
-    }
-    printf("\n");
-  }
-
+  finish = omp_get_wtime();
+  fprintf(stderr, "loop finished\n");
+  double usec_diff = finish - start;
+  fprintf(stderr,"loop time = %f\n", usec_diff);
+  
+  if (!options.quiet){
+    print_result(primary);
+  } 
   free_resources(primary, secondary, vectors);
 }
 
@@ -114,7 +120,7 @@ void parse_args(int argc, char **argv){
   debug("parse args\n");
   char *endptr;
 
-  if (argc < 4 || argc > 6){
+  if (argc < 4 || argc > 7){
     usage();
   }
 
@@ -154,7 +160,7 @@ void parse_args(int argc, char **argv){
 
   options.iter = (int)iterations;
   char c;
-  while ((c = getopt(argc, argv, "f:")) != -1){
+  while ((c = getopt(argc, argv, "qf:")) != -1){
     switch(c){
       case 'f': 
         if (f){
@@ -163,6 +169,12 @@ void parse_args(int argc, char **argv){
         f = true;
         options.file = optarg;       
         break;
+      case 'q':
+        if (options.quiet){
+          usage();
+        } 
+        options.quiet = true;
+        break;
       case '?':
         usage();
         break;
@@ -170,7 +182,6 @@ void parse_args(int argc, char **argv){
         assert(0);
     }
   }
-  printf("%s\n", options.file);
 }
 
 void free_resources(double **primary, double **secondary, double **vectors){
@@ -226,6 +237,15 @@ void print_all(double **primary, double **secondary, double **vectors){
     printf("\n");
   }
   printf("\n\n");
+}
+
+void print_result(double **primary){
+  for (int i = 0; i < options.n; i++){
+    for (int j = 0; j < options.m; j++){
+      printf("%3.4f ", primary[i][j]);
+    }
+    printf("\n");
+  }
 }
 
 void usage(){
