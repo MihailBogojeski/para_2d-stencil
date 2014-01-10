@@ -5,8 +5,7 @@ OBJFILES = stencil.o init.o iterate.o
 ROW_OBJFILES = stencil.o init.o iterate_row.o
 COLUMN_OBJFILES = stencil.o init.o iterate_column.o
 DIAGONAL_OBJFILES = stencil.o init.o iterate_diagonal.o
-SPACE1_OBJFILES = stencil.o init.o iterate_row_space1.o
-SPACE2_OBJFILES = stencil.o init.o iterate_row_space2.o
+SPACE_OBJFILES = stencil.o init.o iterate_row_space.o
 LFLAGS = -fopenmp
 
 all: 	stencil
@@ -35,9 +34,6 @@ column: $(COLUMN_OBJFILES)
 diagonal: $(DIAGONAL_OBJFILES) 
 	$(CC) $(LFLAGS) -o $@ $^
 
-space1: $(SPACE1_OBJFILES)
-	$(CC) $(LFLAGS) -o $@ $^
-
-space2: $(SPACE2_OBJFILES)
+space: $(SPACE_OBJFILES)
 	$(CC) $(LFLAGS) -o $@ $^
 

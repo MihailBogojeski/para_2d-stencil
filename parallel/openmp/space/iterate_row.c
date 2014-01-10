@@ -1,10 +1,13 @@
 #include "common.h"
 #include <omp.h>
+#include <sys/time.h>
 
 static void update(double **primary, double **secondary, int j, int k, double **vectors);
 
 void iterate(double **primary, double **vectors)
 {
+  double start, finish;
+  
   double **secondary = malloc(options.n * sizeof(double*));
   if (secondary == NULL){
     bail_out(EXIT_FAILURE, "malloc secondary");
@@ -16,6 +19,7 @@ void iterate(double **primary, double **vectors)
     }
   }
 
+  start = omp_get_wtime();
   for (int i = 0; i < options.iter; i++){
     for(int j = 0; j < options.n; j++){
       #pragma omp parallel
@@ -30,10 +34,18 @@ void iterate(double **primary, double **vectors)
     primary = secondary;
     secondary = temp;
   }
+  finish = omp_get_wtime();
+  
+  double usec_diff = finish - start;
+  fprintf(stderr,"loop time = %f\n", usec_diff);
+  
   if (options.iter % 2 == 1){
     double **temp = primary;
     primary = secondary;
     secondary = temp;
+    for (int i = 0; i < options.n; i++){
+      memcpy(primary[i],secondary[i],options.m * sizeof(double));
+    } 
   }
   
   for (int i = 0; i < options.n; i++){

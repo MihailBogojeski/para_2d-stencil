@@ -1,6 +1,7 @@
 #include "common.h"
 #include "init.h"
 #include <sys/time.h>
+#include <omp.h>
 
 
 
@@ -23,7 +24,7 @@ void usage();
 int main(int argc, char **argv){
 
   prog = argv[0];
-  struct timeval start, finish;
+  double start, finish;
   parse_args(argc, argv);
 
   double **primary = malloc(options.n * sizeof(double*));
@@ -45,10 +46,10 @@ int main(int argc, char **argv){
   else{
     init_rand (primary, secondary, vectors);
   }
-  // print_all(primary, secondary, vectors);
+
   
   fprintf(stderr, "init finished\n");
-  gettimeofday(&start,NULL);
+  start = omp_get_wtime();
   for (int i = 0; i < options.iter; i++){
     for(int j = 0; j < options.n; j++){
       for(int k = 0; k < options.m; k++){
@@ -68,13 +69,14 @@ int main(int argc, char **argv){
     debug("\n\n");
     */
   }
-  gettimeofday(&finish,NULL);
+  finish = omp_get_wtime();
   fprintf(stderr, "loop finished\n");
-  long usec_diff = (finish.tv_sec - start.tv_sec)*1000000 + (finish.tv_usec - start.tv_usec);
-  fprintf(stderr,"loop time = %lu\n", usec_diff);
+  double usec_diff = finish - start;
+  fprintf(stderr,"loop time = %f\n", usec_diff);
   
-  print_result(primary);
-  
+  if (!options.quiet){
+    print_result(primary);
+  } 
   free_resources(primary, secondary, vectors);
 }
 
@@ -118,7 +120,7 @@ void parse_args(int argc, char **argv){
   debug("parse args\n");
   char *endptr;
 
-  if (argc < 4 || argc > 6){
+  if (argc < 4 || argc > 7){
     usage();
   }
 
@@ -158,7 +160,7 @@ void parse_args(int argc, char **argv){
 
   options.iter = (int)iterations;
   char c;
-  while ((c = getopt(argc, argv, "f:")) != -1){
+  while ((c = getopt(argc, argv, "qf:")) != -1){
     switch(c){
       case 'f': 
         if (f){
@@ -166,6 +168,12 @@ void parse_args(int argc, char **argv){
         }
         f = true;
         options.file = optarg;       
+        break;
+      case 'q':
+        if (options.quiet){
+          usage();
+        } 
+        options.quiet = true;
         break;
       case '?':
         usage();

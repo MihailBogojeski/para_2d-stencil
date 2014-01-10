@@ -56,6 +56,12 @@ int main(int argc, char **argv){
   long usec_diff = (finish.tv_sec - start.tv_sec)*1000000 + (finish.tv_usec - start.tv_usec);
   fprintf(stderr,"loop time = %lu\n", usec_diff);
   
+  if (options.iter%2 == 1){
+    double **temp = primary;
+    primary = secondary;
+    secondary = temp;
+  }
+  
   print_result(primary);
 
   free_resources(primary, secondary, vectors);

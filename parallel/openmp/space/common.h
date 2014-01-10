@@ -20,6 +20,7 @@ struct options {
   int m;
   int iter;
   char *file;
+  bool quiet;
 };
 
 struct options options;

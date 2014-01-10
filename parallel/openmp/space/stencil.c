@@ -1,7 +1,6 @@
 #include "common.h"
 #include "init.h"
 #include "iterate.h"
-#include <sys/time.h>
 
 
 static bool f = false;
@@ -23,7 +22,6 @@ static void usage();
 int main(int argc, char **argv){
   prog = argv[0];
 
-  struct timeval start, finish;
   parse_args(argc, argv);
 
   double **primary = malloc(options.n * sizeof(double*));
@@ -41,18 +39,14 @@ int main(int argc, char **argv){
   else{
     init_rand (primary, vectors);
   }
-  //print_all(primary, vectors);
 
   fprintf(stderr,"init finished\n"); 
-  gettimeofday(&start,NULL);
   iterate(primary, vectors);
-  gettimeofday(&finish,NULL);
   fprintf(stderr, "loop finished\n");
-  long usec_diff = (finish.tv_sec - start.tv_sec)*1000000 + (finish.tv_usec - start.tv_usec);
-  fprintf(stderr,"loop time = %lu\n", usec_diff);
-
-  print_result(primary);
   
+  if (!options.quiet){
+    print_result(primary);
+  }
   free_resources(primary, vectors);
 }
 
@@ -61,7 +55,7 @@ static void parse_args(int argc, char **argv){
   debug("parse args\n");
   char *endptr;
 
-  if (argc < 4 || argc > 6){
+  if (argc < 4 || argc > 7){
     usage();
   }
 
@@ -101,7 +95,7 @@ static void parse_args(int argc, char **argv){
 
   options.iter = (int)iterations;
   char c;
-  while ((c = getopt(argc, argv, "f:")) != -1){
+  while ((c = getopt(argc, argv, "qf:")) != -1){
     switch(c){
       case 'f': 
         if (f){
@@ -109,6 +103,12 @@ static void parse_args(int argc, char **argv){
         }
         f = true;
         options.file = optarg;       
+        break;
+      case 'q':
+        if (options.quiet){
+          usage();
+        } 
+        options.quiet = true;
         break;
       case '?':
         usage();
