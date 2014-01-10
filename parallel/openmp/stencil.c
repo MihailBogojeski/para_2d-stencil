@@ -21,10 +21,8 @@ static void print_all(double **primary, double **secondary, double **vectors);
 static void usage();
 
 int main(int argc, char **argv){
- printf("HELLLLLLLLLO!"); 
   prog = argv[0];
 
-  struct timeval start, finish;
   parse_args(argc, argv);
 
   double **primary = malloc(options.n * sizeof(double*));
