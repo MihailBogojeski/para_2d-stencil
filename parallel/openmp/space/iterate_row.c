@@ -21,13 +21,10 @@ void iterate(double **primary, double **vectors)
 
   start = omp_get_wtime();
   for (int i = 0; i < options.iter; i++){
+#pragma omp parallel for schedule(dynamic)
     for(int j = 0; j < options.n; j++){
-      #pragma omp parallel
-      {
-        #pragma omp for nowait
-        for(int k = 0; k < options.m; k++){
-          update(primary, secondary, j, k, vectors);
-        }
+      for(int k = 0; k < options.m; k++){
+        update(primary, secondary, j, k, vectors);
       }
     }
     double **temp = primary;

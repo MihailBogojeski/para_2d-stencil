@@ -24,12 +24,9 @@ void iterate(double **primary, double **vectors)
   start = omp_get_wtime();
   for (int i = 0; i < options.iter; i++){
     for(int j = 0; j < options.n; j++){
-      #pragma omp parallel
-      {
-        #pragma omp for nowait
-        for(int k = 0; k < options.m; k++){
-          update(primary, tmp_rows[j%2], j, k, vectors);
-        }
+#pragma omp parallel for schedule(static) 
+      for(int k = 0; k < options.m; k++){
+        update(primary, tmp_rows[j%2], j, k, vectors);
       }
       if (j > 0) {
         memcpy(primary[j-1],tmp_rows[(j-1)%2], options.m * sizeof(double));
