@@ -21,7 +21,7 @@ void iterate(double **primary, double **vectors)
 
   start = omp_get_wtime();
   for (int i = 0; i < options.iter; i++){
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(static)
     for(int j = 0; j < options.n; j++){
       for(int k = 0; k < options.m; k++){
         update(primary, secondary, j, k, vectors);

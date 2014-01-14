@@ -6,7 +6,7 @@
 double rand_double();
 
 
-void init_rand(double **primary, double **secondary, double **vectors){
+void init_rand(double **primary, double **vectors){
   debug("init\n");
   srand((unsigned int)time((time_t*) NULL));
 
@@ -14,10 +14,6 @@ void init_rand(double **primary, double **secondary, double **vectors){
     primary[i] = malloc(options.m * sizeof(double));
     if (primary[i] == NULL){
       bail_out(EXIT_FAILURE, "malloc primary[%d]", i);
-    }
-    secondary[i] = calloc(options.m, sizeof(double));
-    if (secondary[i] == NULL){
-      bail_out(EXIT_FAILURE, "malloc secondary[%d]", i);
     }
     for (int j = 0; j < options.m; j++){
       primary[i][j] = rand_double();
@@ -43,7 +39,7 @@ void init_rand(double **primary, double **secondary, double **vectors){
   debug("in init: %f", vectors[0][0]);
 }
 
-void init_file(double **primary, double **secondary, double **vectors){
+void init_file(double **primary, double **vectors){
   FILE* input = fopen(options.file, "r");
   if(input == NULL){
     bail_out(EXIT_FAILURE, "File does not exist!");
@@ -108,11 +104,6 @@ void init_file(double **primary, double **secondary, double **vectors){
     if (primary[i] == NULL){
       bail_out(EXIT_FAILURE, "malloc primary[%d]", i);
     }
-    secondary[i] = calloc(options.m, sizeof(double));
-    if (secondary[i] == NULL){
-      bail_out(EXIT_FAILURE, "malloc secondary[%d]", i);
-    }
-    
     char *line = NULL;
     int len = 0;
     getline(&line, (size_t *)&len, input);
