@@ -1,0 +1,148 @@
+#include "common.h"
+#include "init.h" 
+
+#define RANGE (1000)
+
+double rand_double();
+
+
+void init_rand(double **primary, double **vectors){
+  int i,j;
+  int vec_len = 0;
+  debug("init\n");
+  srand((unsigned int)time((time_t*) NULL));
+
+  for (i = 0; i < options.n; i++){
+    primary[i] = calloc(options.m, sizeof(double));
+    if (primary[i] == NULL){
+      bail_out(EXIT_FAILURE, "malloc primary[%d]", i);
+    }
+    for (j = 0; j < options.m; j++){
+      double rand = rand_double();
+      primary[i][j] = rand;
+    }
+  }
+
+  
+  for (i = 0; i < NUM_VEC; i++){
+    if (i%2 == 0){
+      vec_len = options.m;
+    }
+    else{
+      vec_len = options.n;
+    }
+    vectors[i] = malloc(vec_len * sizeof(double));
+    if (vectors[i] == NULL){
+      bail_out(EXIT_FAILURE, "malloc vectors[%d]\n", i);
+    }
+    for (j = 0; j < vec_len; j++){
+      vectors[i][j] = rand_double();
+    }
+  }
+  debug("in init: %f", vectors[0][0]);
+}
+
+void init_file(double **primary, double **vectors){
+  FILE* input = fopen(options.file, "r");
+  int i;
+  if(input == NULL){
+    bail_out(EXIT_FAILURE, "File does not exist!");
+  }
+
+
+  for (i = 0; i < 4; i++){
+    int vec_len;
+    int len = 4096;
+    char *line = malloc(len * sizeof(char));
+    char *token;
+    int j = 0;
+    debug("i : %d \n", i);
+    if (i%2 == 0){
+      vec_len = options.m;
+    }
+    else{
+      vec_len = options.n;
+    }
+    
+    debug("i : %d \n", i);
+    debug("veclen : %d\n", vec_len);
+    
+    vectors[i] = malloc(vec_len * sizeof(double)); 
+    if (vectors[i] == NULL){
+      bail_out(EXIT_FAILURE, "malloc vectors[%d]\n", i);
+    }
+    debug("i : %d \n", i);
+    getline(&line, (size_t *)&len, input);
+    if (line == NULL){
+      bail_out(EXIT_FAILURE, "getline");
+    }
+    debug("after getline\n");
+    debug("i : %d \n", i);
+    token = strtok(line, " ");
+    if (token == NULL){
+      bail_out(EXIT_FAILURE, "strtok");
+    }
+    debug("i : %d \n", i);
+    do{
+      char *endptr = NULL;
+      double val = strtod(token, &endptr);
+      if (j >= vec_len){
+        break;
+      }
+      debug("%d : %s\n", j, token);
+      if (token == endptr){
+        bail_out(EXIT_FAILURE, "file parsing failed!");
+      } 
+      if (j >= vec_len){
+        break;
+      }
+      vectors[i][j] = val;
+      j++;
+    debug("i : %d \n", i);
+    } while((token = strtok(NULL, " ")) != NULL);
+    debug("i : %d \n", i);
+    debug("\n\n");
+  }
+
+  for (i = 0; i < options.n; i++){
+    char *line = NULL;
+    int len = 0;
+    char *token;
+    int j = 0;
+    
+    primary[i] = malloc(options.m * sizeof(double));
+    if (primary[i] == NULL){
+      bail_out(EXIT_FAILURE, "malloc primary[%d]", i);
+    }
+    getline(&line, (size_t *)&len, input);
+    if (line == NULL){
+      bail_out(EXIT_FAILURE, "getline");
+    } 
+    token = strtok(line, " ");
+    if (token == NULL){
+      bail_out(EXIT_FAILURE, "strtok");
+    }
+    do{
+      char *endptr = NULL;
+      double val = strtod(token, &endptr);
+      if (j >= options.m){
+        break;
+      } 
+      if (token == endptr){
+        bail_out(EXIT_FAILURE, "file parsing failed!");
+      } 
+
+      primary[i][j] = val;
+      j++;
+    } while((token = strtok(NULL, " ")) != NULL);
+  }
+}
+
+double rand_double() 
+{
+  double range = RANGE; 
+  double divided = RAND_MAX / range;
+  return (rand() / divided);
+}
+
+

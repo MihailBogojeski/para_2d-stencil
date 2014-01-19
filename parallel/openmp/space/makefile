@@ -23,7 +23,7 @@ stencil.c: init.h common.h iterate.h
 iterate*.c: common.h iterate.h
 
 clean:
-	rm -f *.o stencil
+	rm -f *.o stencil row space
 
 row: $(ROW_OBJFILES) 
 	$(CC) $(LFLAGS) -o $@ $^

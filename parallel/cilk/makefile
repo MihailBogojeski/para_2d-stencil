@@ -1,26 +1,26 @@
-CC = gcc
-DEFS = -D_BSD_SOURCE -D_XOPEN_SOURCE=500 -D_GNU_SOURCE
-CFLAGS = -std=c99 -pedantic -Wall -fopenmp -O3 -g -c $(DEFS)
+CC = cilkc 
+DEFS =  -D_XOPEN_SOURCE=600 -D_POSIX_C_SOURCE=200809L
+CFLAGS = -pedantic -Wall -fopenmp  -O2 -c $(DEFS)
 OBJFILES = stencil.o init.o iterate.o
 ROW_OBJFILES = stencil.o init.o iterate_row.o
 COLUMN_OBJFILES = stencil.o init.o iterate_column.o
 DIAGONAL_OBJFILES = stencil.o init.o iterate_diagonal.o
 SPACE_OBJFILES = stencil.o init.o iterate_row_space.o
-LFLAGS = -fopenmp
+LFLAGS = -fopenmp  
 
 all: 	stencil
 
 stencil: 	$(OBJFILES) 
 	$(CC) $(LFLAGS) -o $@ $^
 
-%.o: 	%.c
+%.o: 	%.cilk
 	$(CC) $(CFLAGS) -o $@ $^
 
-init.c: init.h common.h 
+init.cilk: init.h common.h 
 
-stencil.c: init.h common.h iterate.h
+stencil.cilk: init.h common.h iterate.cilkh
 
-iterate*.c: common.h iterate.h
+iterate*.cilk: common.h iterate.cilkh
 
 clean:
 	rm -f *.o stencil row space

@@ -3,6 +3,7 @@
 #include <sys/time.h>
 
 static void update(double **primary, double **secondary, int j, int k, double **vectors);
+static void swap (double ***primary, double ***secondary);
 
 void iterate(double **primary, double **vectors)
 {
@@ -25,12 +26,8 @@ void iterate(double **primary, double **vectors)
       for(int k = 0; k < options.m; k++){
         update(primary, secondary, j, k, vectors);
       }
-        finish = omp_get_wtime();
-  	double usec_diff = finish - start;
     }
-    double **temp = primary;
-    primary = secondary;
-    secondary = temp;
+    swap(&primary, &secondary);
   }
   finish = omp_get_wtime();
   
@@ -87,3 +84,14 @@ static void update(double **primary, double **secondary, int j, int k, double **
   secondary[j][k] = sum/(double)4;
 }
 
+static void swap (double ***primary, double ***secondary){
+  double **temp = *primary;
+  *primary = *secondary;
+  *secondary = temp;
+  /*
+  for (int i = 0; i < options.n; i++){
+    memcpy((*primary)[i],(*secondary)[i],options.m * sizeof(double));
+  }
+  */
+  
+}
