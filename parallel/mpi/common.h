@@ -8,6 +8,7 @@
 #include <time.h>
 #include <assert.h>
 #include <stdbool.h>
+#include <mpi.h>
 
 #define NUM_VEC (4)
 #define DEBUG (0)
@@ -25,5 +26,8 @@ struct options {
 
 struct options options;
 
+int sub_rows, sub_cols, dims[2], coords[2];
+
+MPI_Comm cart_comm;
 
 void bail_out(int eval, const char *fmt, ...);
