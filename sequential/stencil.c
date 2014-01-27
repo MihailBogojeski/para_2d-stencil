@@ -9,13 +9,11 @@ static char* prog;
 
 
 
-static void free_resources(double **primary, double **vectors);
+static void free_resources(double **primary);
 
 static void parse_args(int argc, char **argv);
 
-static void print_result(double **primary);
-
-static void print_all(double **primary, double **vectors);
+static void print_all(double **primary);
 
 static void usage();
 
@@ -24,30 +22,28 @@ int main(int argc, char **argv){
 
   parse_args(argc, argv);
 
-  double **primary = malloc(options.n * sizeof(double*));
+  double **primary = malloc((options.n + 2) * sizeof(double*));
   if (primary == NULL){
     bail_out(EXIT_FAILURE, "malloc primary");
   }
-  double **vectors = malloc(NUM_VEC * sizeof(double*));
-  if (vectors == NULL){
-    bail_out(EXIT_FAILURE, "malloc vectors");
-  }
 
   if (f){
-    init_file(primary, vectors);
+    init_file(primary);
   }
   else{
-    init_rand (primary, vectors);
+    init_rand (primary);
   }
 
+  //print_all(primary);
+
   fprintf(stderr,"init finished\n"); 
-  iterate(primary, vectors);
+  iterate(primary);
   fprintf(stderr, "loop finished\n");
   
   if (!options.quiet){
-    print_result(primary);
+    print_all(primary);
   }
-  free_resources(primary, vectors);
+  free_resources(primary);
 }
 
 
@@ -119,17 +115,13 @@ static void parse_args(int argc, char **argv){
   }
 }
 
-static void free_resources(double **primary, double **vectors){
+static void free_resources(double **primary){
   debug("free_resources\n");
-  for (int i = 0; i < options.n; i++){
+  for (int i = 0; i < options.n + 2; i++){
     free(primary[i]);
   }
   free(primary);
 
-  for (int i = 0; i < NUM_VEC; i++){
-    free(vectors[i]);
-  }
-  free(vectors);
 
 }
 
@@ -148,23 +140,9 @@ void bail_out(int eval, const char *fmt, ...){
   exit(eval);
 }
 
-static void print_all(double **primary, double **vectors){
-  for (int i = 0; i < NUM_VEC; i++){
-    if (i%2 == 0){
-      for (int j = 0; j < options.m; j++){
-        printf("%8.4f ", vectors[i][j]);
-      }
-    }
-    else{
-      for (int j = 0; j < options.n; j++){
-        printf("%8.4f ", vectors[i][j]);
-      }
-    }
-    printf("\n\n");
-  }
-
-  for (int i = 0; i < options.n; i++){
-    for (int j = 0; j < options.m; j++){
+static void print_all(double **primary){
+  for (int i = 0; i < options.n + 2; i++){
+    for (int j = 0; j < options.m + 2; j++){
       printf("%8.4f ", primary[i][j]);
     }
     printf("\n");
@@ -172,14 +150,6 @@ static void print_all(double **primary, double **vectors){
   printf("\n\n");
 }
 
-static void print_result(double **primary){
-  for (int i = 0; i < options.n; i++){
-    for (int j = 0; j < options.m; j++){
-      printf("%3.4f ", primary[i][j]);
-    }
-    printf("\n");
-  }
-}
 
 static void usage(){
   bail_out(EXIT_FAILURE, "Usage: stencil rows columns iterations [-f input]");

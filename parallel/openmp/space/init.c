@@ -6,101 +6,30 @@
 double rand_double();
 
 
-void init_rand(double **primary, double **vectors){
+void init_rand(double **primary){
   debug("init\n");
   srand((unsigned int)time((time_t*) NULL));
 
-  for (int i = 0; i < options.n; i++){
-    primary[i] = malloc(options.m * sizeof(double));
+  for (int i = 0; i < options.n + 2; i++){
+    primary[i] = malloc((options.m + 2) * sizeof(double));
     if (primary[i] == NULL){
       bail_out(EXIT_FAILURE, "malloc primary[%d]", i);
     }
-    for (int j = 0; j < options.m; j++){
+    for (int j = 0; j < options.m + 2; j++){
       primary[i][j] = rand_double();
     }
   }
 
-  int vec_len = 0;
-  for (int i = 0; i < NUM_VEC; i++){
-    if (i%2 == 0){
-      vec_len = options.m;
-    }
-    else{
-      vec_len = options.n;
-    }
-    vectors[i] = malloc(vec_len * sizeof(double));
-    if (vectors[i] == NULL){
-      bail_out(EXIT_FAILURE, "malloc vectors[%d]\n", i);
-    }
-    for (int j = 0; j < vec_len; j++){
-      vectors[i][j] = rand_double();
-    }
-  }
-  debug("in init: %f", vectors[0][0]);
 }
 
-void init_file(double **primary, double **vectors){
+void init_file(double **primary){
   FILE* input = fopen(options.file, "r");
   if(input == NULL){
     bail_out(EXIT_FAILURE, "File does not exist!");
   }
 
-
-  for (int i = 0; i < 4; i++){
-    int vec_len;
-    debug("i : %d \n", i);
-    if (i%2 == 0){
-      vec_len = options.m;
-    }
-    else{
-      vec_len = options.n;
-    }
-    
-    debug("i : %d \n", i);
-    debug("veclen : %d\n", vec_len);
-    
-    vectors[i] = malloc(vec_len * sizeof(double)); 
-    if (vectors[i] == NULL){
-      bail_out(EXIT_FAILURE, "malloc vectors[%d]\n", i);
-    }
-    debug("i : %d \n", i);
-    int len = 4096;
-    char *line = malloc(len * sizeof(char));
-    getline(&line, (size_t *)&len, input);
-    if (line == NULL){
-      bail_out(EXIT_FAILURE, "getline");
-    }
-    debug("after getline\n");
-    debug("i : %d \n", i);
-    char *token = strtok(line, " ");
-    if (token == NULL){
-      bail_out(EXIT_FAILURE, "strtok");
-    }
-    debug("i : %d \n", i);
-    int j = 0;
-    do{
-      if (j >= vec_len){
-        break;
-      }
-      char *endptr = NULL;
-      double val = strtod(token, &endptr);
-      debug("%d : %s\n", j, token);
-      if (token == endptr){
-        bail_out(EXIT_FAILURE, "file parsing failed!");
-      } 
-      if (j >= vec_len){
-        break;
-      }
-      vectors[i][j] = val;
-      j++;
-    debug("i : %d \n", i);
-    } while((token = strtok(NULL, " ")) != NULL);
-    debug("i : %d \n", i);
-    debug("\n\n");
-  }
-
-  for (int i = 0; i < options.n; i++){
-    primary[i] = malloc(options.m * sizeof(double));
+  for (int i = 0; i < options.n + 2; i++){
+    primary[i] = malloc((options.m + 2) * sizeof(double));
     if (primary[i] == NULL){
       bail_out(EXIT_FAILURE, "malloc primary[%d]", i);
     }
@@ -116,9 +45,6 @@ void init_file(double **primary, double **vectors){
     }
     int j = 0;
     do{
-      if (j >= options.m){
-        break;
-      } 
       char *endptr = NULL;
       double val = strtod(token, &endptr);
       if (token == endptr){
@@ -126,7 +52,11 @@ void init_file(double **primary, double **vectors){
       } 
 
       primary[i][j] = val;
+
       j++;
+      if (j >= options.m + 2){
+        break;
+      } 
     } while((token = strtok(NULL, " ")) != NULL);
   }
 }

@@ -1,1 +1,1 @@
-void iterate(double **primary, double **vectors);
+void iterate(double **primary);

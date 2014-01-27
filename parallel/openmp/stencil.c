@@ -1,7 +1,6 @@
 #include "common.h"
 #include "init.h"
 #include "iterate.h"
-#include <sys/time.h>
 
 
 static bool f = false;
@@ -10,61 +9,41 @@ static char* prog;
 
 
 
-static void free_resources(double **primary, double **secondary, double **vectors);
+static void free_resources(double **primary);
 
 static void parse_args(int argc, char **argv);
 
-static void print_result(double **primary);
-
-static void print_all(double **primary, double **secondary, double **vectors);
+static void print_all(double **primary);
 
 static void usage();
 
 int main(int argc, char **argv){
-
   prog = argv[0];
 
-  struct timeval start, finish;
   parse_args(argc, argv);
 
-  double **primary = malloc(options.n * sizeof(double*));
+  double **primary = malloc((options.n + 2) * sizeof(double*));
   if (primary == NULL){
     bail_out(EXIT_FAILURE, "malloc primary");
   }
-  double **secondary = calloc(options.n, sizeof(double*));
-  if (secondary == NULL){
-    bail_out(EXIT_FAILURE, "malloc secondary");
-  }
-  double **vectors = malloc(NUM_VEC * sizeof(double*));
-  if (vectors == NULL){
-    bail_out(EXIT_FAILURE, "malloc vectors");
-  }
 
   if (f){
-    init_file(primary, secondary, vectors);
+    init_file(primary);
   }
   else{
-    init_rand (primary, secondary, vectors);
+    init_rand (primary);
   }
-  //print_all(primary, secondary, vectors);
+
+  //print_all(primary);
 
   fprintf(stderr,"init finished\n"); 
-  gettimeofday(&start,NULL);
-  iterate(primary, secondary, vectors);
-  gettimeofday(&finish,NULL);
+  iterate(primary);
   fprintf(stderr, "loop finished\n");
-  long usec_diff = (finish.tv_sec - start.tv_sec)*1000000 + (finish.tv_usec - start.tv_usec);
-  fprintf(stderr,"loop time = %lu\n", usec_diff);
   
-  if (options.iter%2 == 1){
-    double **temp = primary;
-    primary = secondary;
-    secondary = temp;
+  if (!options.quiet){
+    print_all(primary);
   }
-  
-  print_result(primary);
-
-  free_resources(primary, secondary, vectors);
+  free_resources(primary);
 }
 
 
@@ -72,7 +51,7 @@ static void parse_args(int argc, char **argv){
   debug("parse args\n");
   char *endptr;
 
-  if (argc < 4 || argc > 6){
+  if (argc < 4 || argc > 7){
     usage();
   }
 
@@ -112,7 +91,7 @@ static void parse_args(int argc, char **argv){
 
   options.iter = (int)iterations;
   char c;
-  while ((c = getopt(argc, argv, "f:")) != -1){
+  while ((c = getopt(argc, argv, "qf:")) != -1){
     switch(c){
       case 'f': 
         if (f){
@@ -120,6 +99,12 @@ static void parse_args(int argc, char **argv){
         }
         f = true;
         options.file = optarg;       
+        break;
+      case 'q':
+        if (options.quiet){
+          usage();
+        } 
+        options.quiet = true;
         break;
       case '?':
         usage();
@@ -130,19 +115,13 @@ static void parse_args(int argc, char **argv){
   }
 }
 
-static void free_resources(double **primary, double **secondary, double **vectors){
+static void free_resources(double **primary){
   debug("free_resources\n");
-  for (int i = 0; i < options.n; i++){
-    free(secondary[i]);
+  for (int i = 0; i < options.n + 2; i++){
     free(primary[i]);
   }
   free(primary);
-  free(secondary);
 
-  for (int i = 0; i < NUM_VEC; i++){
-    free(vectors[i]);
-  }
-  free(vectors);
 
 }
 
@@ -161,37 +140,16 @@ void bail_out(int eval, const char *fmt, ...){
   exit(eval);
 }
 
-static void print_all(double **primary, double **secondary, double **vectors){
-  for (int i = 0; i < NUM_VEC; i++){
-    if (i%2 == 0){
-      for (int j = 0; j < options.m; j++){
-        printf("%8.4f ", vectors[i][j]);
-      }
-    }
-    else{
-      for (int j = 0; j < options.n; j++){
-        printf("%8.4f ", vectors[i][j]);
-      }
-    }
-    printf("\n");
-  }
-
-  for (int i = 0; i < options.n; i++){
-    for (int j = 0; j < options.m; j++){
+static void print_all(double **primary){
+  for (int i = 0; i < options.n + 2; i++){
+    for (int j = 0; j < options.m + 2; j++){
       printf("%8.4f ", primary[i][j]);
     }
     printf("\n");
   }
+  printf("\n\n");
 }
 
-static void print_result(double **primary){
-  for (int i = 0; i < options.n; i++){
-    for (int j = 0; j < options.m; j++){
-      printf("%3.4f ", primary[i][j]);
-    }
-    printf("\n");
-  }
-}
 
 static void usage(){
   bail_out(EXIT_FAILURE, "Usage: stencil rows columns iterations [-f input]");
