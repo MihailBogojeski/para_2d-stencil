@@ -1,0 +1,180 @@
+#include "common.h"
+#include "init.h"
+#include "iterate.cilkh"
+
+
+static int f = 0;
+static char* prog;
+
+
+
+
+static void free_resources(double **primary);
+
+static void parse_args(int argc, char **argv);
+
+static void print_result(double **primary);
+
+static void print_all(double **primary);
+
+static void usage();
+
+cilk int main(int argc, char **argv){
+  double **primary;
+  prog = argv[0];
+
+  parse_args(argc, argv);
+  primary = malloc(ROW_VEC * sizeof(double*));
+
+  if (primary == NULL){
+    bail_out(EXIT_FAILURE, "malloc primary");
+  }
+
+  if (f){
+    init_file(primary);
+  }
+  else{
+    init_rand (primary);
+  }
+
+  fprintf(stderr,"init finished\n"); 
+  spawn iterate(&primary);
+  sync;
+  fprintf(stderr, "loop finished\n");
+  
+  if (!options.quiet){
+    print_all(primary);
+  }
+  free_resources(primary);
+}
+
+
+static void parse_args(int argc, char **argv){
+  char *endptr;
+  long rows = strtol(argv[1], &endptr, 0);
+  long columns = strtol(argv[2], &endptr, 0);
+  long iterations = strtol(argv[3], &endptr, 0);
+  char c;
+  int i;
+
+  debug("parse args\n");
+
+  if (argc < 4 || argc > 7){
+    usage();
+  }
+
+
+  if (endptr == argv[1]){
+    bail_out(EXIT_FAILURE, "strtol rows");
+  }
+
+  if (rows > INT_MAX){
+    bail_out(EXIT_FAILURE, "rows number too big");
+  }
+  options.n = (int)rows;
+
+
+  if (endptr == argv[2]){
+    bail_out(EXIT_FAILURE, "strtol columns");
+  }
+
+  if (columns > INT_MAX){
+    bail_out(EXIT_FAILURE, "columns number too big");
+  }
+
+  options.m = (int)columns;
+  
+
+  if (endptr == argv[3]){
+    bail_out(EXIT_FAILURE, "strtol iterations");
+  }
+
+  if (columns > INT_MAX){
+    bail_out(EXIT_FAILURE, "iterations number too big");
+  }
+
+  options.iter = (int)iterations;
+  for (i = 0; i < argc; i++){
+    if (strcmp(argv[i],"-q") == 0){
+      options.quiet = 1;
+    }
+    if (strcmp(argv[i],"-f") == 0){
+      options.file = argv[i+1];
+      f = 1;
+    }
+  }
+  while ((c = getopt(argc, argv, "qf:")) != -1){
+    printf("%c", c);
+    switch(c){
+      case 'f': 
+        if (f){
+          usage(); 
+        }
+        f = 1;
+        options.file = optarg;       
+        break;
+      case 'q':
+        printf("case quiet\n");
+        if (options.quiet){
+          usage();
+        } 
+        options.quiet = 1;
+        break;
+      case '?':
+        usage();
+        break;
+      default:
+        assert(0);
+    }
+  }
+}
+
+static void free_resources(double **primary){
+  int i;
+  debug("free_resources\n");
+  for (i = 0; i < ROW_VEC; i++){
+    free(primary[i]);
+  }
+  free(primary);
+}
+
+void bail_out(int eval, const char *fmt, ...){
+  va_list ap;   
+  (void) fprintf(stderr, "%s: ", prog);
+  if (fmt != NULL) {
+    va_start(ap, fmt);
+    (void) vfprintf(stderr, fmt, ap);
+    va_end(ap);
+  }   
+  if (errno != 0) {
+    (void) fprintf(stderr, ": %s", strerror(errno));
+  }   
+  (void) fprintf(stderr, "\n"); 
+  exit(eval);
+}
+
+static void print_all(double **primary){
+  int i,j;
+
+  for (i = 0; i < ROW_VEC; i++){
+    for (j = 0; j < COL_VEC; j++){
+      printf("%8.4f ", primary[i][j]);
+    }
+    printf("\n");
+  }
+  printf("\n\n");
+}
+
+static void print_result(double **primary){
+  int i,j;
+  for (i = 1; i <= options.n; i++){
+    for (j = 1; j <= options.m; j++){
+      printf("%8.4f ", primary[i][j]);
+    }
+    printf("\n");
+  }
+}
+
+static void usage(){
+  bail_out(EXIT_FAILURE, "Usage: stencil rows columns iterations [-f input]");
+}

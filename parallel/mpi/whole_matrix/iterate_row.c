@@ -5,9 +5,9 @@
 static void update(double *primary, double *secondary, int j, int k);
 static void swap (double **primary, double **secondary);
 
-void iterate(double *sub_matrix)
+void iterate(double **sub_matrix)
 {
-  //double start, finish;
+  double start, finish;
   int p, rank;
   MPI_Comm_size(MPI_COMM_WORLD, &p);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -17,7 +17,7 @@ void iterate(double *sub_matrix)
     bail_out(EXIT_FAILURE, "malloc secondary");
   }
 
-  memcpy(secondary, sub_matrix,(sub_rows + 2) * (sub_cols + 2) * sizeof(double));
+  memcpy(secondary, *sub_matrix,(sub_rows + 2) * (sub_cols + 2) * sizeof(double));
   
   /* for (int proc = 0; proc < p; proc++){
     if (proc == rank){
@@ -53,15 +53,16 @@ void iterate(double *sub_matrix)
   MPI_Type_create_resized(col2, 0, sizeof(double), &col);
   MPI_Type_commit(&col); 
 
-
+  if (rank == 0) fprintf(stderr, "init finished\n");
+  start = MPI_Wtime();
   for (int i = 0 ; i < options.iter; i++){
 
     for (int j = 1; j <= sub_rows; j++){
       for(int k = 1; k <= sub_cols; k++){
-        update(sub_matrix, secondary, j,k);
+        update(*sub_matrix, secondary, j,k);
       }
     }
-    swap(&sub_matrix, &secondary);
+    swap(sub_matrix, &secondary);
   
     
     if (coords[0] > 0){
@@ -69,8 +70,8 @@ void iterate(double *sub_matrix)
       int tmp_rank = 0;
       MPI_Status status;
       MPI_Cart_rank(cart_comm, &tmp_coords[0], &tmp_rank);
-      MPI_Sendrecv (&sub_matrix[sub_cols + 2], sub_cols + 2, MPI_DOUBLE, tmp_rank, 2,
-          sub_matrix, sub_cols + 2, MPI_DOUBLE, tmp_rank, 0, MPI_COMM_WORLD, &status);
+      MPI_Sendrecv (&((*sub_matrix)[sub_cols + 2]), sub_cols + 2, MPI_DOUBLE, tmp_rank, 2,
+          *sub_matrix, sub_cols + 2, MPI_DOUBLE, tmp_rank, 0, MPI_COMM_WORLD, &status);
       //MPI_Sendrecv (&sub_matrix[sub_cols + 3], sub_cols, MPI_DOUBLE, tmp_rank, 2,
       //    &sub_matrix[1], sub_cols, MPI_DOUBLE, tmp_rank, 0, MPI_COMM_WORLD, &status);
     }
@@ -80,8 +81,8 @@ void iterate(double *sub_matrix)
       int tmp_rank = 0;
       MPI_Status status;
       MPI_Cart_rank(cart_comm, &tmp_coords[0], &tmp_rank);
-      MPI_Sendrecv (&sub_matrix[(sub_cols + 2) * (sub_rows)], sub_cols + 2, MPI_DOUBLE, tmp_rank, 0,
-          &sub_matrix[(sub_cols + 2) * (sub_rows + 1)], sub_cols + 2, MPI_DOUBLE, tmp_rank, 2, MPI_COMM_WORLD, &status);
+      MPI_Sendrecv (&((*sub_matrix)[(sub_cols + 2) * (sub_rows)]), sub_cols + 2, MPI_DOUBLE, tmp_rank, 0,
+          &((*sub_matrix)[(sub_cols + 2) * (sub_rows + 1)]), sub_cols + 2, MPI_DOUBLE, tmp_rank, 2, MPI_COMM_WORLD, &status);
       //MPI_Sendrecv (&sub_matrix[(sub_cols + 2) * (sub_rows) + 1], sub_cols, MPI_DOUBLE, tmp_rank, 0,
       //    &sub_matrix[(sub_cols + 2) * (sub_rows + 1) + 1], sub_cols, MPI_DOUBLE, tmp_rank, 2, MPI_COMM_WORLD, &status);
     }
@@ -91,8 +92,8 @@ void iterate(double *sub_matrix)
       int tmp_rank = 0;
       MPI_Status status;
       MPI_Cart_rank(cart_comm, &tmp_coords[0], &tmp_rank);
-      MPI_Sendrecv (&sub_matrix[1], 1, col, tmp_rank, 1,
-          sub_matrix, 1, col, tmp_rank, 3, MPI_COMM_WORLD, &status);
+      MPI_Sendrecv (&((*sub_matrix)[1]), 1, col, tmp_rank, 1,
+          *sub_matrix, 1, col, tmp_rank, 3, MPI_COMM_WORLD, &status);
     }
 
     if (coords[1] < dims[1] - 1){
@@ -100,19 +101,19 @@ void iterate(double *sub_matrix)
       int tmp_rank = 0;
       MPI_Status status;
       MPI_Cart_rank(cart_comm, &tmp_coords[0], &tmp_rank);
-      MPI_Sendrecv (&sub_matrix[sub_cols], 1, col, tmp_rank, 3,
-          &sub_matrix[sub_cols + 1], 1, col, tmp_rank, 1, MPI_COMM_WORLD, &status);
+      MPI_Sendrecv (&((*sub_matrix)[sub_cols]), 1, col, tmp_rank, 3,
+          &((*sub_matrix)[sub_cols + 1]), 1, col, tmp_rank, 1, MPI_COMM_WORLD, &status);
     }
 
 
     MPI_Barrier(MPI_COMM_WORLD);
   }
+  finish = MPI_Wtime();
+  if (rank == 0) fprintf(stderr, "loop time = %f\n", finish-start);
+  
+  if (rank == 0) fprintf(stderr, "loop finished\n");
 
   
-  if (options.iter % 2 == 1){
-    swap(&sub_matrix, &secondary);
-    memcpy(sub_matrix, secondary, (sub_cols + 2) * (sub_rows + 2) * sizeof(double));
-  }
   /*  start = omp_get_wtime();
   for (int i = 0; i < options.iter; i++){
     for(int j = 0; j < options.n; j++){

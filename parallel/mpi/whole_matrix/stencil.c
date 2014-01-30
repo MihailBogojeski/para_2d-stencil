@@ -123,7 +123,7 @@ int main(int argc, char **argv){
 
   
 
-  iterate(sub_matrix);
+  iterate(&sub_matrix);
   
   MPI_Datatype submatrix_recv;
   MPI_Datatype submatrix_recv2;

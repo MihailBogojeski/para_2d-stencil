@@ -10,12 +10,12 @@ void init_rand(double **primary){
   debug("init\n");
   srand((unsigned int)time((time_t*) NULL));
 
-  for (int i = 0; i < options.n + 2; i++){
-    primary[i] = malloc((options.m + 2) * sizeof(double));
+  for (int i = 0; i < ROW_VEC; i++){
+    primary[i] = malloc((COL_VEC) * sizeof(double));
     if (primary[i] == NULL){
       bail_out(EXIT_FAILURE, "malloc primary[%d]", i);
     }
-    for (int j = 0; j < options.m + 2; j++){
+    for (int j = 0; j < COL_VEC; j++){
       primary[i][j] = rand_double();
     }
   }
@@ -28,8 +28,8 @@ void init_file(double **primary){
     bail_out(EXIT_FAILURE, "File does not exist!");
   }
 
-  for (int i = 0; i < options.n + 2; i++){
-    primary[i] = malloc((options.m + 2) * sizeof(double));
+  for (int i = 0; i < ROW_VEC; i++){
+    primary[i] = malloc((COL_VEC) * sizeof(double));
     if (primary[i] == NULL){
       bail_out(EXIT_FAILURE, "malloc primary[%d]", i);
     }
@@ -54,7 +54,7 @@ void init_file(double **primary){
       primary[i][j] = val;
 
       j++;
-      if (j >= options.m + 2){
+      if (j >= COL_VEC){
         break;
       } 
     } while((token = strtok(NULL, " ")) != NULL);

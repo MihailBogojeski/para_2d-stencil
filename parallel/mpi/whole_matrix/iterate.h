@@ -1,1 +1,1 @@
-void iterate(double *sub_matrix);
+void iterate(double **sub_matrix);

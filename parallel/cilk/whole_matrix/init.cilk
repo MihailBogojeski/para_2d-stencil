@@ -1,0 +1,76 @@
+#include "common.h"
+#include "init.h" 
+
+#define RANGE (1000)
+
+double rand_double();
+
+
+void init_rand(double **primary){
+  int i,j;
+  int vec_len = 0;
+  debug("init\n");
+  srand((unsigned int)time((time_t*) NULL));
+
+  
+  for (i = 0; i < ROW_VEC; i++){
+    primary[i] = malloc((COL_VEC) * sizeof(double));
+    if (primary[i] == NULL){
+      bail_out(EXIT_FAILURE, "malloc primary[%d]", i);
+    }
+    for (j = 0; j < COL_VEC; j++){
+      primary[i][j] = rand_double();
+    }
+  }
+  
+}
+
+void init_file(double **primary){
+  FILE* input = fopen(options.file, "r");
+  int i;
+  if(input == NULL){
+    bail_out(EXIT_FAILURE, "File does not exist!");
+  }
+
+  for (i = 0; i < ROW_VEC; i++){
+    char *line = NULL;
+    int len = 0;
+    char *token;
+    int j = 0;
+    
+    primary[i] = malloc(COL_VEC * sizeof(double));
+    if (primary[i] == NULL){
+      bail_out(EXIT_FAILURE, "malloc primary[%d]", i);
+    }
+    getline(&line, (size_t *)&len, input);
+    if (line == NULL){
+      bail_out(EXIT_FAILURE, "getline");
+    } 
+    token = strtok(line, " ");
+    if (token == NULL){
+      bail_out(EXIT_FAILURE, "strtok");
+    }
+    do{
+      char *endptr = NULL;
+      double val = strtod(token, &endptr);
+      if (token == endptr){
+        bail_out(EXIT_FAILURE, "file parsing failed!");
+      } 
+
+      primary[i][j] = val;
+      j++;
+      if (j >= COL_VEC){
+        break;
+      } 
+    } while((token = strtok(NULL, " ")) != NULL);
+  }
+}
+
+double rand_double() 
+{
+  double range = RANGE; 
+  double divided = RAND_MAX / range;
+  return (rand() / divided);
+}
+
+

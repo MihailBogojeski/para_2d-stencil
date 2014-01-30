@@ -4,7 +4,7 @@
 
 static void update(double **primary, double *secondary, int j, int k);
 
-void iterate(double **primary)
+void iterate(double ***primary)
 {
   double start, finish;
   
@@ -14,11 +14,11 @@ void iterate(double **primary)
   }
   
   for (int i = 0; i < 2; i++){
-    tmp_rows[i] = calloc(options.m + 2, sizeof(double));
+    tmp_rows[i] = calloc(COL_VEC, sizeof(double));
     if (tmp_rows[i] == NULL){
       bail_out(EXIT_FAILURE, "malloc tmp_rows[%d]", i);
     }
-    memcpy(tmp_rows[i], primary[i+1], (options.m + 2) * sizeof(double));
+    memcpy(tmp_rows[i], (*primary)[i+1], (COL_VEC) * sizeof(double));
   }
 
   start = omp_get_wtime();
@@ -26,13 +26,13 @@ void iterate(double **primary)
     for(int j = 1; j <= options.n; j++){
 #pragma omp parallel for schedule (static)
       for(int k = 1; k <= options.m; k++){
-        update(primary, tmp_rows[(j+1)%2], j, k);
+        update(*primary, tmp_rows[(j+1)%2], j, k);
       }
       if (j > 1) {
-        memcpy(&primary[j-1][1],&tmp_rows[(j)%2][1], options.m * sizeof(double));
+        memcpy(&((*primary)[j-1][1]),&tmp_rows[(j)%2][1], options.m * sizeof(double));
       }
     }
-    memcpy(&primary[options.n][1],&tmp_rows[(options.n+1)%2][1], options.m * sizeof(double));
+    memcpy(&((*primary)[options.n][1]),&tmp_rows[(options.n+1)%2][1], options.m * sizeof(double));
   }
   finish = omp_get_wtime();
   

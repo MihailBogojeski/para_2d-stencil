@@ -22,7 +22,7 @@ int main(int argc, char **argv){
 
   parse_args(argc, argv);
 
-  double **primary = malloc((options.n + 2) * sizeof(double*));
+  double **primary = malloc((ROW_VEC) * sizeof(double*));
   if (primary == NULL){
     bail_out(EXIT_FAILURE, "malloc primary");
   }
@@ -37,7 +37,7 @@ int main(int argc, char **argv){
   //print_all(primary);
 
   fprintf(stderr,"init finished\n"); 
-  iterate(primary);
+  iterate(&primary);
   fprintf(stderr, "loop finished\n");
   
   if (!options.quiet){
@@ -117,7 +117,7 @@ static void parse_args(int argc, char **argv){
 
 static void free_resources(double **primary){
   debug("free_resources\n");
-  for (int i = 0; i < options.n + 2; i++){
+  for (int i = 0; i < ROW_VEC; i++){
     free(primary[i]);
   }
   free(primary);
@@ -141,8 +141,8 @@ void bail_out(int eval, const char *fmt, ...){
 }
 
 static void print_all(double **primary){
-  for (int i = 0; i < options.n + 2; i++){
-    for (int j = 0; j < options.m + 2; j++){
+  for (int i = 0; i < ROW_VEC; i++){
+    for (int j = 0; j < COL_VEC; j++){
       printf("%8.4f ", primary[i][j]);
     }
     printf("\n");

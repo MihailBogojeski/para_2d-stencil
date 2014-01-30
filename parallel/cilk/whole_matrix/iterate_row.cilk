@@ -1,0 +1,89 @@
+#include "common.h"
+#include <omp.h>
+#include <sys/time.h>
+#include <cilk-lib.cilkh>
+
+#define min(x,y) (x)<(y)?(x):(y)
+
+
+static void update(double **primary, double **secondary, int j, int k);
+static void swap (double ***primary, double ***secondary);
+cilk static void update_chunk(double **primary, double **secondary, int j, int depth, int min, int max);
+
+cilk void iterate(double ***primary)
+{
+  double start, finish, usec_diff;
+  int i,j; 
+  double **secondary = malloc(ROW_VEC * sizeof(double*));
+  if (secondary == NULL){
+    bail_out(EXIT_FAILURE, "malloc secondary");
+  }
+  for (i = 0; i < ROW_VEC; i++){
+    secondary[i] = calloc(COL_VEC, sizeof(double));
+    if (secondary[i] == NULL){
+      bail_out(EXIT_FAILURE, "malloc secondary[%d]", i);
+    }
+  }
+  
+  for (i = 0; i < ROW_VEC; i++){
+    memcpy(secondary[i], (*primary)[i], (COL_VEC) * sizeof(double));
+  }
+
+  start = Cilk_get_wall_time();
+  for (i = 0; i < options.iter; i++){
+    for(j = 1; j <= options.n; j++){
+      spawn update_chunk(*primary, secondary, j, 1, 1, options.m + 1);
+    }
+    sync;
+    swap(primary, &secondary);
+  }
+  finish = Cilk_get_wall_time();
+  
+  usec_diff = finish - start;
+  fprintf(stderr,"loop time = %f\n", usec_diff/(double)1000000);
+  
+  
+  for (i = 0; i < options.n; i++){
+    free(secondary[i]);
+  }
+  free(secondary);
+}
+
+static void update(double **primary, double **secondary, int j, int k){
+  double sum = 0;
+  debug("update %d %d\n", j, k);
+
+    sum += primary[j][k-1];
+    sum += primary[j-1][k];
+    sum += primary[j][k+1];
+    sum += primary[j+1][k];
+
+  secondary[j][k] = sum/(double)4;
+}
+
+cilk static void update_chunk(double **primary, double **secondary, int j, int depth, int min, int max){
+  int k;
+  int chunk_value = options.m/(8*Cilk_active_size) + 1; 
+  int chunksize = min(2048, chunk_value);
+  //printf("length = %d, 8* processors = %d\n", options.m, 8*Cilk_active_size);
+  //printf("processors = %d, chunk_value = %d, chunksize = %d\n", Cilk_active_size, chunk_value, chunksize);
+  //printf("row = %d, min = %d, max = %d\n", j ,min, max);
+  if (Cilk_active_size < (options.n * depth) || max-min < chunksize*2){ 
+    //printf("processors = %d, rows = %d\n", Cilk_active_size, options.n * depth);
+    for(k = min; k < max; k++){
+      update(primary, secondary, j, k);
+    }
+  }
+  else{
+    int mid = (min + max)/2;   
+    spawn update_chunk(primary, secondary, j, depth+1, min, mid);
+    spawn update_chunk(primary, secondary, j, depth+1, mid, max);
+  }
+}
+
+static void swap (double ***primary, double ***secondary){
+  double **temp = *primary;
+  *primary = *secondary;
+  *secondary = temp;
+  
+}
