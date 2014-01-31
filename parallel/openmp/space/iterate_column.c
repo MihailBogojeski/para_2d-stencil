@@ -1,30 +1,55 @@
 #include "common.h"
+#include <omp.h>
+#include <sys/time.h>
 
 static void update(double **primary, double **secondary, int j, int k, double **vectors);
 
-void iterate(double **primary, double **secondary, double **vectors)
+void iterate(double **primary, double **vectors)
 {
- for (int i = 0; i < options.iter; i++){
-    for(int j = 0; j < options.n; j++){
-      for(int k = 0; k < options.m; k++){
+  double start, finish;
+  
+  double **secondary = malloc(options.n * sizeof(double*));
+  if (secondary == NULL){
+    bail_out(EXIT_FAILURE, "malloc secondary");
+  }
+  for (int i = 0; i < options.n; i++){
+    secondary[i] = calloc(options.m, sizeof(double));
+    if (secondary[i] == NULL){
+      bail_out(EXIT_FAILURE, "malloc secondary[%d]", i);
+    }
+  }
+
+  start = omp_get_wtime();
+  for (int i = 0; i < options.iter; i++){
+#pragma omp parallel for schedule(static)
+    for(int k = 0; k < options.m; k++){
+      for(int j = 0; j < options.n; j++){
         update(primary, secondary, j, k, vectors);
       }
     }
     double **temp = primary;
     primary = secondary;
     secondary = temp;
-
-    for (int i = 0; i < options.n; i++){
-      for (int j = 0; j < options.m; j++){
-        debug("%3.4f ", primary[i][j]);
-      }
-      debug("\n");
-    }
-    debug("\n\n");
-
   }
+  finish = omp_get_wtime();
+  
+  double usec_diff = finish - start;
+  fprintf(stderr,"loop time = %f\n", usec_diff);
+  
+  if (options.iter % 2 == 1){
+    double **temp = primary;
+    primary = secondary;
+    secondary = temp;
+    for (int i = 0; i < options.n; i++){
+      memcpy(primary[i],secondary[i],options.m * sizeof(double));
+    } 
+  }
+  
+  for (int i = 0; i < options.n; i++){
+    free(secondary[i]);
+  }
+  free(secondary);
 }
-
 static void update(double **primary, double **secondary, int j, int k, double **vectors){
   debug("update %d %d\n", j, k);
 
