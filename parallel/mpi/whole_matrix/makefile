@@ -2,12 +2,11 @@ CC = mpicc
 DEFS = -D_BSD_SOURCE -D_XOPEN_SOURCE=500 -D_GNU_SOURCE
 CFLAGS = -std=c99 -pedantic -Wall -O3 -g -c $(DEFS)
 OBJFILES = stencil.o init.o 
-ROW_OBJFILES = stencil.o init.o iterate_row.o
-COLUMN_OBJFILES = stencil.o init.o iterate_column.o
-DIAGONAL_OBJFILES = stencil.o init.o iterate_diagonal.o
-SPACE_OBJFILES = stencil.o init.o iterate_row_space.o
+SR_OBJFILES = stencil.o init.o iterate_sendrecv.o
+NON_BLK_OBJFILES = stencil.o init.o iterate_non_blocking.o
+ONE_SIDE_OBJFILES = stencil.o init.o iterate_one_sided.o
 LFLAGS = 
-all: 	stencil
+all: 	
 
 stencil: 	$(OBJFILES) 
 	$(CC) $(LFLAGS) -o $@ $^
@@ -24,15 +23,12 @@ iterate*.c: common.h iterate.h
 clean:
 	rm -f *.o stencil row space
 
-row: $(ROW_OBJFILES) 
+sendrecv: $(SR_OBJFILES) 
 	$(CC) $(LFLAGS) -o $@ $^
 	
-column: $(COLUMN_OBJFILES) 
+non_blocking: $(NON_BLK_OBJFILES) 
 	$(CC) $(LFLAGS) -o $@ $^
 
-diagonal: $(DIAGONAL_OBJFILES) 
-	$(CC) $(LFLAGS) -o $@ $^
-
-space: $(SPACE_OBJFILES)
+one_sided: $(ONE_SIDE_OBJFILES) 
 	$(CC) $(LFLAGS) -o $@ $^
 
