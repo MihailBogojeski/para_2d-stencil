@@ -5,7 +5,7 @@
 
 static bool f = false;
 static char* prog;
-
+static bool test = false;
 
 
 
@@ -34,6 +34,7 @@ int main(int argc, char **argv){
 
   double *primary = NULL;;
 
+  // init primary matrix
   if (rank == 0){
     primary = malloc((COL_VEC) * (ROW_VEC) * sizeof(double));
     
@@ -43,16 +44,17 @@ int main(int argc, char **argv){
     if (f){
       init_file(primary);
     }
+    else if(test){
+      for (int i = 0; i < (ROW_VEC) * (COL_VEC); i++) {
+        primary [i] = i;
+      }
+    }
     else{
       init_rand (primary);
     }
   }
   
-  /*if (rank == 0 && !f){
-    for (int i = 0; i < (ROW_VEC) * (COL_VEC); i++) {
-      primary [i] = i;
-    }
-  }*/
+
   MPI_Barrier(MPI_COMM_WORLD);
   
 
@@ -178,7 +180,7 @@ static void parse_args(int argc, char **argv){
   debug("parse args\n");
   char *endptr;
 
-  if (argc < 4 || argc > 7){
+  if (argc < 4 || argc > 8){
     usage();
   }
 
@@ -218,7 +220,7 @@ static void parse_args(int argc, char **argv){
 
   options.iter = (int)iterations;
   char c;
-  while ((c = getopt(argc, argv, "qf:")) != -1){
+  while ((c = getopt(argc, argv, "qf:t")) != -1){
     switch(c){
       case 'f': 
         if (f){
@@ -232,6 +234,9 @@ static void parse_args(int argc, char **argv){
           usage();
         } 
         options.quiet = true;
+        break;
+      case 't':
+        test = true;
         break;
       case '?':
         usage();

@@ -8,7 +8,7 @@ DIAGONAL_OBJFILES = stencil.o init.o iterate_diagonal.o
 SPACE_OBJFILES = stencil.o init.o iterate_row_space.o
 LFLAGS = -fopenmp
 
-all: 	stencil
+all: row column space diagonal
 
 stencil: 	$(OBJFILES) 
 	$(CC) $(LFLAGS) -o $@ $^

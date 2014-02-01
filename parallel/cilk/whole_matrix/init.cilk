@@ -66,6 +66,25 @@ void init_file(double **primary){
   }
 }
 
+void init_test(double **primary){
+  int i,j;
+  int vec_len = 0;
+  debug("init\n");
+  srand((unsigned int)time((time_t*) NULL));
+
+  
+  for (i = 0; i < ROW_VEC; i++){
+    primary[i] = malloc((COL_VEC) * sizeof(double));
+    if (primary[i] == NULL){
+      bail_out(EXIT_FAILURE, "malloc primary[%d]", i);
+    }
+    for (j = 0; j < COL_VEC; j++){
+      primary[i][j] = i*COL_VEC + j;
+    }
+  }
+  
+}
+
 double rand_double() 
 {
   double range = RANGE; 

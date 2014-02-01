@@ -1,63 +1,68 @@
 #include "common.h"
+#include <omp.h>
+#include <sys/time.h>
 
-static void update(double **primary, double **secondary, int j, int k, double **vectors);
+static void update(double **primary, double **secondary, int j, int k);
+static void swap (double ***primary, double ***secondary);
 
-void iterate(double **primary, double **secondary, double **vectors)
-{
- for (int i = 0; i < options.iter; i++){
-    for(int j = 0; j < options.n; j++){
-      for(int k = 0; k < options.m; k++){
-        update(primary, secondary, j, k, vectors);
-      }
-    }
-    double **temp = primary;
-    primary = secondary;
-    secondary = temp;
-
-    for (int i = 0; i < options.n; i++){
-      for (int j = 0; j < options.m; j++){
-        debug("%3.4f ", primary[i][j]);
-      }
-      debug("\n");
-    }
-    debug("\n\n");
-
+void iterate(double ***primary){
+  double start, finish;
+  
+  double **secondary = malloc((ROW_VEC) * sizeof(double*));
+  if (secondary == NULL){
+    bail_out(EXIT_FAILURE, "malloc secondary");
   }
-}
+  for (int i = 0; i < ROW_VEC; i++){
+    secondary[i] = calloc(COL_VEC, sizeof(double));
+    if (secondary[i] == NULL){
+      bail_out(EXIT_FAILURE, "malloc secondary[%d]", i);
+    }
+  }
+  for (int i = 0; i < ROW_VEC; i++){
+    memcpy(secondary[i], (*primary)[i], (COL_VEC) * sizeof(double));
+  }
 
-static void update(double **primary, double **secondary, int j, int k, double **vectors){
+  start = omp_get_wtime();
+  for (int i = 0; i < options.iter; i++){
+    for(int k = 1; k <= options.m; k++){
+      for(int j = 1; j <= options.n; j++){
+        update(*primary, secondary, j, k);
+      }
+    }
+    swap(primary, &secondary);
+  }
+  finish = omp_get_wtime();
+  
+  double usec_diff = finish - start;
+  fprintf(stderr,"loop time = %f\n", usec_diff);
+  
+  
+  for (int i = 0; i < ROW_VEC; i++){
+    free(secondary[i]);
+  }
+  free(secondary);
+}
+static void update(double **primary, double **secondary, int j, int k){
   debug("update %d %d\n", j, k);
 
   double sum = 0;
 
-  if (k-1 < 0) {
-    sum += vectors[3][j];
-  }
-  else{
-    sum += primary[j][k-1];
-  }
-
-  if (j-1 < 0) {
-    sum += vectors[0][k];
-  }
-  else{
-    sum += primary[j-1][k];
-  }
-
-  if (k+1 >= options.m) {
-    sum += vectors[1][j];
-  }
-  else{
-    sum += primary[j][k+1];
-  }
-
-  if (j+1 >= options.n) {
-    sum += vectors[2][k];
-  }
-  else{
-    sum += primary[j+1][k];
-  }
+  sum += primary[j][k-1];
+  sum += primary[j-1][k];
+  sum += primary[j][k+1];
+  sum += primary[j+1][k];
 
   secondary[j][k] = sum/(double)4;
 }
 
+static void swap (double ***primary, double ***secondary){
+  double **temp = *primary;
+  *primary = *secondary;
+  *secondary = temp;
+  /*
+  for (int i = 0; i < options.n; i++){
+    memcpy((*primary)[i],(*secondary)[i],options.m * sizeof(double));
+  }
+  */
+  
+}

@@ -5,6 +5,7 @@
 
 static bool f = false;
 static char* prog;
+static bool test = false;
 
 
 
@@ -30,6 +31,9 @@ int main(int argc, char **argv){
   if (f){
     init_file(primary);
   }
+  else if(test){
+    init_test(primary);
+  }
   else{
     init_rand (primary);
   }
@@ -51,7 +55,8 @@ static void parse_args(int argc, char **argv){
   debug("parse args\n");
   char *endptr;
 
-  if (argc < 4 || argc > 7){
+
+  if (argc < 4 || argc > 9){
     usage();
   }
 
@@ -91,7 +96,7 @@ static void parse_args(int argc, char **argv){
 
   options.iter = (int)iterations;
   char c;
-  while ((c = getopt(argc, argv, "qf:")) != -1){
+  while ((c = getopt(argc, argv, "qf:t")) != -1){
     switch(c){
       case 'f': 
         if (f){
@@ -99,6 +104,9 @@ static void parse_args(int argc, char **argv){
         }
         f = true;
         options.file = optarg;       
+        break;
+      case 't':
+        test = true;
         break;
       case 'q':
         if (options.quiet){
@@ -152,5 +160,5 @@ static void print_all(double **primary){
 
 
 static void usage(){
-  bail_out(EXIT_FAILURE, "Usage: stencil rows columns iterations [-f input]");
+  bail_out(EXIT_FAILURE, "Usage: stencil rows columns iterations [-f input] [-q] [-p nproc]");
 }

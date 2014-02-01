@@ -5,6 +5,7 @@
 
 static bool f = false;
 static char* prog;
+static bool test = false;
 
 
 
@@ -29,6 +30,9 @@ int main(int argc, char **argv){
 
   if (f){
     init_file(primary);
+  }
+  else if(test){
+    init_test(primary);
   }
   else{
     init_rand (primary);
@@ -93,7 +97,7 @@ static void parse_args(int argc, char **argv){
 
   options.iter = (int)iterations;
   char c;
-  while ((c = getopt(argc, argv, "qf:p:")) != -1){
+  while ((c = getopt(argc, argv, "qf:p:t")) != -1){
     switch(c){
       case 'f': 
         if (f){
@@ -103,8 +107,10 @@ static void parse_args(int argc, char **argv){
         options.file = optarg;       
         break;
       case 'p': 
-
         options.nproc = (int)strtol(optarg, &endptr, 0);       
+        break;
+      case 't':
+        test = true;
         break;
       case 'q':
         if (options.quiet){
