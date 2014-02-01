@@ -51,7 +51,9 @@ static void parse_args(int argc, char **argv){
   debug("parse args\n");
   char *endptr;
 
-  if (argc < 4 || argc > 7){
+  options.nproc = 0;
+
+  if (argc < 4 || argc > 9){
     usage();
   }
 
@@ -91,7 +93,7 @@ static void parse_args(int argc, char **argv){
 
   options.iter = (int)iterations;
   char c;
-  while ((c = getopt(argc, argv, "qf:")) != -1){
+  while ((c = getopt(argc, argv, "qf:p:")) != -1){
     switch(c){
       case 'f': 
         if (f){
@@ -99,6 +101,10 @@ static void parse_args(int argc, char **argv){
         }
         f = true;
         options.file = optarg;       
+        break;
+      case 'p': 
+
+        options.nproc = (int)strtol(optarg, &endptr, 0);       
         break;
       case 'q':
         if (options.quiet){
@@ -152,5 +158,5 @@ static void print_all(double **primary){
 
 
 static void usage(){
-  bail_out(EXIT_FAILURE, "Usage: stencil rows columns iterations [-f input]");
+  bail_out(EXIT_FAILURE, "Usage: stencil rows columns iterations [-f input] [-q] [-p nproc]");
 }

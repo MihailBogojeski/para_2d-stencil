@@ -7,6 +7,9 @@ static void swap (double ***primary, double ***secondary);
 
 void iterate(double ***primary){
   double start, finish;
+  if (options.nproc != 0){
+    omp_set_num_threads(options.nproc);
+  }
   
   double **secondary = malloc((ROW_VEC) * sizeof(double*));
   if (secondary == NULL){

@@ -14,21 +14,21 @@ void iterate(double **sub_matrix)
   MPI_Request requests[8];
   MPI_Status statuses[8];
 
-  double *secondary = calloc((sub_rows + 2) * (sub_cols + 2), sizeof(double));
+  double *secondary = calloc((SUB_ROW) * (SUB_COL), sizeof(double));
   if (secondary == NULL){
     bail_out(EXIT_FAILURE, "malloc secondary");
   }
 
-  memcpy(secondary, *sub_matrix,(sub_rows + 2) * (sub_cols + 2) * sizeof(double));
+  memcpy(secondary, *sub_matrix,(SUB_ROW) * (SUB_COL) * sizeof(double));
   
   /* for (int proc = 0; proc < p; proc++){
     if (proc == rank){
       printf("submatrix:\n");
       printf("Rank : %d\n", rank);
       printf("matrix : \n");
-      for(int j = 0; j < sub_rows +2; j++){
-        for(int k = 0; k < sub_cols+ 2; k++){
-          printf("%8.4f ", sub_matrix[j *  (sub_cols +2) + k]);
+      for(int j = 0; j < SUB_ROW; j++){
+        for(int k = 0; k < SUB_COL; k++){
+          printf("%8.4f ", sub_matrix[j *  (SUB_COL) + k]);
         }
         printf("\n");
       }
@@ -40,9 +40,9 @@ void iterate(double **sub_matrix)
       printf("secondary:\n");
       printf("Rank : %d\n", rank);
       printf("matrix : \n");
-      for(int j = 0; j < sub_rows +2; j++){
-        for(int k = 0; k < sub_cols+ 2; k++){
-          printf("%8.4f ", secondary[j *  (sub_cols +2) + k]);
+      for(int j = 0; j < SUB_ROW; j++){
+        for(int k = 0; k < SUB_COL; k++){
+          printf("%8.4f ", secondary[j *  (SUB_COL) + k]);
         }
         printf("\n");
       }
@@ -51,7 +51,7 @@ void iterate(double **sub_matrix)
   }*/
 
   MPI_Datatype col, col2; 
-  MPI_Type_vector(sub_rows + 2,1,sub_cols + 2,MPI_DOUBLE, &col2); 
+  MPI_Type_vector(SUB_ROW,1,SUB_COL,MPI_DOUBLE, &col2); 
   MPI_Type_create_resized(col2, 0, sizeof(double), &col);
   MPI_Type_commit(&col); 
 
@@ -71,9 +71,9 @@ void iterate(double **sub_matrix)
       int tmp_coords[2] = {coords[0] - 1, coords[1]};
       int tmp_rank = 0;
       MPI_Cart_rank(cart_comm, &tmp_coords[0], &tmp_rank);
-      MPI_Isend (&((*sub_matrix)[sub_cols + 2]), sub_cols + 2, MPI_DOUBLE, tmp_rank, 2, MPI_COMM_WORLD, &requests[reqs]);
+      MPI_Isend (&((*sub_matrix)[SUB_COL]), SUB_COL, MPI_DOUBLE, tmp_rank, 2, MPI_COMM_WORLD, &requests[reqs]);
       reqs++;
-      MPI_Irecv (*sub_matrix, sub_cols + 2, MPI_DOUBLE, tmp_rank, 0, MPI_COMM_WORLD, &requests[reqs]);
+      MPI_Irecv (*sub_matrix, SUB_COL, MPI_DOUBLE, tmp_rank, 0, MPI_COMM_WORLD, &requests[reqs]);
       reqs++;
     }
 
@@ -81,9 +81,9 @@ void iterate(double **sub_matrix)
       int tmp_coords[2] = {coords[0] + 1, coords[1]};
       int tmp_rank = 0;
       MPI_Cart_rank(cart_comm, &tmp_coords[0], &tmp_rank);
-      MPI_Isend (&((*sub_matrix)[(sub_cols + 2) * (sub_rows)]), sub_cols + 2, MPI_DOUBLE, tmp_rank, 0, MPI_COMM_WORLD, &requests[reqs]);
+      MPI_Isend (&((*sub_matrix)[(SUB_COL) * (sub_rows)]), SUB_COL, MPI_DOUBLE, tmp_rank, 0, MPI_COMM_WORLD, &requests[reqs]);
       reqs++;
-      MPI_Irecv (&((*sub_matrix)[(sub_cols + 2) * (sub_rows + 1)]), sub_cols + 2, MPI_DOUBLE, tmp_rank, 2, MPI_COMM_WORLD, &requests[reqs]);
+      MPI_Irecv (&((*sub_matrix)[(SUB_COL) * (sub_rows + 1)]), SUB_COL, MPI_DOUBLE, tmp_rank, 2, MPI_COMM_WORLD, &requests[reqs]);
       reqs++;
     }
 
@@ -148,12 +148,12 @@ static void update(double *primary, double *secondary, int j, int k){
 
   double sum = 0;
 
-  sum += primary[((sub_cols + 2) * j) + k-1];
-  sum += primary[((sub_cols + 2) * (j-1)) + k];
-  sum += primary[((sub_cols + 2) * j) + k+1];
-  sum += primary[((sub_cols + 2) * (j+1)) + k];
+  sum += primary[((SUB_COL) * j) + k-1];
+  sum += primary[((SUB_COL) * (j-1)) + k];
+  sum += primary[((SUB_COL) * j) + k+1];
+  sum += primary[((SUB_COL) * (j+1)) + k];
 
-  secondary[((sub_cols + 2) * j) + k] = sum/(double)4;
+  secondary[((SUB_COL) * j) + k] = sum/(double)4;
 }
 
 static void swap (double **primary, double **secondary){

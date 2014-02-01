@@ -24,6 +24,7 @@ struct options {
   int iter;
   char *file;
   bool quiet;
+  int nproc;
 };
 
 struct options options;

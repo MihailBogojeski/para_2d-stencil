@@ -7,6 +7,9 @@ static void update(double **primary, double *secondary, int j, int k);
 void iterate(double ***primary)
 {
   double start, finish;
+  if (options.nproc != 0){
+    omp_set_num_threads(options.nproc);
+  }
   
   double **tmp_rows = malloc(2 * sizeof(double*));
   if (tmp_rows == NULL){

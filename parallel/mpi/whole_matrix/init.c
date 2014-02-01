@@ -10,9 +10,9 @@ void init_rand(double *primary){
   debug("init\n");
   srand((unsigned int)time((time_t*) NULL));
 
-  for (int i = 0; i < options.n + 2; i++){
-    for (int j = 0; j < options.m + 2; j++){
-      primary[i*(options.m + 2) + j] = rand_double();
+  for (int i = 0; i < ROW_VEC; i++){
+    for (int j = 0; j < COL_VEC; j++){
+      primary[i*(COL_VEC) + j] = rand_double();
     }
   }
 
@@ -24,7 +24,7 @@ void init_file(double *primary){
     bail_out(EXIT_FAILURE, "File does not exist!");
   }
   
-  for (int i = 0; i < options.n + 2; i++){
+  for (int i = 0; i < ROW_VEC; i++){
     char *line = NULL;
     int len = 0;
     getline(&line, (size_t *)&len, input);
@@ -43,9 +43,9 @@ void init_file(double *primary){
         bail_out(EXIT_FAILURE, "file parsing failed!");
       } 
 
-      primary[i*(options.m + 2) + j] = val;
+      primary[i*(COL_VEC) + j] = val;
       j++;
-      if (j >= options.m + 2){
+      if (j >= COL_VEC){
         break;
       } 
     } while((token = strtok(NULL, " ")) != NULL);

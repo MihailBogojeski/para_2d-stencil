@@ -35,7 +35,7 @@ int main(int argc, char **argv){
   double *primary = NULL;;
 
   if (rank == 0){
-    primary = malloc((options.m + 2) * (options.n + 2) * sizeof(double));
+    primary = malloc((COL_VEC) * (ROW_VEC) * sizeof(double));
     
     if (primary == NULL){
       bail_out(EXIT_FAILURE, "malloc primary");
@@ -49,7 +49,7 @@ int main(int argc, char **argv){
   }
   
   /*if (rank == 0 && !f){
-    for (int i = 0; i < (options.n + 2) * (options.m + 2); i++) {
+    for (int i = 0; i < (ROW_VEC) * (COL_VEC); i++) {
       primary [i] = i;
     }
   }*/
@@ -91,7 +91,7 @@ int main(int argc, char **argv){
   
   MPI_Barrier(MPI_COMM_WORLD);
  
-  double *sub_matrix = calloc((sub_cols+2) * (sub_rows+2), sizeof(double));
+  double *sub_matrix = calloc((SUB_COL) * (SUB_ROW), sizeof(double));
 
 
   //Create needed MPI types to scatter array and vectors
@@ -99,7 +99,7 @@ int main(int argc, char **argv){
   MPI_Datatype big_submatrix;
   MPI_Datatype big_submatrix2;
 
-  MPI_Type_vector(sub_rows + 2, sub_cols + 2, options.m + 2, MPI_DOUBLE, &big_submatrix2);
+  MPI_Type_vector(SUB_ROW, SUB_COL, COL_VEC, MPI_DOUBLE, &big_submatrix2);
   MPI_Type_create_resized(big_submatrix2, 0, sizeof(double), &big_submatrix);
   MPI_Type_commit(&big_submatrix);
   MPI_Type_free(&big_submatrix2);
@@ -108,7 +108,7 @@ int main(int argc, char **argv){
   int counts[dims[0]*dims[1]];
   for (int i = 0; i < dims[0]; i++) {
     for (int j = 0; j < dims[1]; j++) {
-      disps[i * dims[1] + j] = (i * (options.m + 2) * sub_rows) + (j * sub_cols);
+      disps[i * dims[1] + j] = (i * (COL_VEC) * sub_rows) + (j * sub_cols);
       counts [i * dims[1] + j] = 1;
     }
   }
@@ -117,7 +117,7 @@ int main(int argc, char **argv){
   
   //Scatter array and vectors
   MPI_Scatterv(primary, counts, disps, big_submatrix, 
-      sub_matrix, (sub_rows + 2)*(sub_cols +2), MPI_DOUBLE, 0, MPI_COMM_WORLD);
+      sub_matrix, (SUB_ROW)*(SUB_COL), MPI_DOUBLE, 0, MPI_COMM_WORLD);
   
   MPI_Type_free(&big_submatrix);
   
@@ -127,7 +127,7 @@ int main(int argc, char **argv){
   MPI_Datatype submatrix_recv;
   MPI_Datatype submatrix_recv2;
 
-  MPI_Type_vector(sub_rows, sub_cols, options.m + 2, MPI_DOUBLE, &submatrix_recv2);
+  MPI_Type_vector(sub_rows, sub_cols, COL_VEC, MPI_DOUBLE, &submatrix_recv2);
   MPI_Type_create_resized(submatrix_recv2, 0, sizeof(double), &submatrix_recv);
   MPI_Type_commit(&submatrix_recv);
   MPI_Type_free(&submatrix_recv2);
@@ -136,14 +136,14 @@ int main(int argc, char **argv){
   MPI_Datatype submatrix_send;
   MPI_Datatype submatrix_send2;
 
-  MPI_Type_vector(sub_rows, sub_cols, sub_cols + 2, MPI_DOUBLE, &submatrix_send2);
+  MPI_Type_vector(sub_rows, sub_cols, SUB_COL, MPI_DOUBLE, &submatrix_send2);
   MPI_Type_create_resized(submatrix_send2, 0, sizeof(double), &submatrix_send);
   MPI_Type_commit(&submatrix_send);
   MPI_Type_free(&submatrix_send2);
   
   for (int i = 0; i < dims[0]; i++) {
     for (int j = 0; j < dims[1]; j++) {
-      disps[i * dims[1] + j] = (i * (options.m + 2) * sub_rows) + (j * sub_cols) + options.m + 3;
+      disps[i * dims[1] + j] = (i * (COL_VEC) * sub_rows) + (j * sub_cols) + options.m + 3;
       counts [i * dims[1] + j] = 1;
     }
   }
@@ -267,9 +267,9 @@ void bail_out(int eval, const char *fmt, ...){
 
 static void print_all(double *primary){
 
-  for (int i = 0; i < options.n + 2; i++){
-    for (int j = 0; j < options.m + 2; j++){
-      printf("%8.4f ", primary[i* (options.m + 2) + j]);
+  for (int i = 0; i < ROW_VEC; i++){
+    for (int j = 0; j < COL_VEC; j++){
+      printf("%8.4f ", primary[i* (COL_VEC) + j]);
     }
     printf("\n");
 
@@ -278,9 +278,9 @@ static void print_all(double *primary){
 }
 
 static void print_result(double *primary){
-  for (int i = 0; i < options.n + 2; i++){
-    for (int j = 0; j < options.m + 2; j++){
-      printf("%8.4f ", primary[i* (options.m + 2) + j]);
+  for (int i = 0; i < ROW_VEC; i++){
+    for (int j = 0; j < COL_VEC; j++){
+      printf("%8.4f ", primary[i* (COL_VEC) + j]);
     }
     printf("\n");
   }
