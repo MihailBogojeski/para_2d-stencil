@@ -9,7 +9,7 @@ static char* prog;
 
 
 
-static void free_resources(double *primary);
+static void free_resources(double *primary, double *sub_matrix);
 
 static void parse_args(int argc, char **argv);
 
@@ -79,9 +79,6 @@ int main(int argc, char **argv){
 
   int periods[2] = {0,0};
 
-  MPI_Group orig_gr, vec_groups[NUM_VEC];
-  
-
 
   MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods, 0, &cart_comm);
   
@@ -116,11 +113,13 @@ int main(int argc, char **argv){
     }
   }
   
+  if (rank == 0) fprintf(stderr, "before scatterv\n");
+  
   //Scatter array and vectors
   MPI_Scatterv(primary, counts, disps, big_submatrix, 
       sub_matrix, (sub_rows + 2)*(sub_cols +2), MPI_DOUBLE, 0, MPI_COMM_WORLD);
   
-
+  MPI_Type_free(&big_submatrix);
   
 
   iterate(&sub_matrix);
@@ -153,7 +152,12 @@ int main(int argc, char **argv){
   MPI_Gatherv(&sub_matrix[sub_cols + 3], 1, submatrix_send, 
       primary, counts, disps, submatrix_recv, 0, MPI_COMM_WORLD);
 
+  if (rank == 0) fprintf(stderr, "after gatherv\n");
   
+  MPI_Type_free(&submatrix_send);
+  MPI_Type_free(&submatrix_recv);
+  MPI_Comm_free(&cart_comm);
+
   
 
   //fprintf(stderr,"init finished\n"); 
@@ -166,7 +170,7 @@ int main(int argc, char **argv){
   
   MPI_Barrier(MPI_COMM_WORLD);
   
-  free_resources(primary);
+  free_resources(primary,sub_matrix);
 }
 
 
@@ -238,9 +242,10 @@ static void parse_args(int argc, char **argv){
   }
 }
 
-static void free_resources(double *primary){
+static void free_resources(double *primary, double *sub_matrix){
   debug("free_resources\n");
   free(primary);
+  free(sub_matrix);
 
 
 }

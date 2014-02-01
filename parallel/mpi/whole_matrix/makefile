@@ -21,7 +21,7 @@ stencil.c: init.h common.h
 iterate*.c: common.h iterate.h
 
 clean:
-	rm -f *.o stencil row space
+	rm -f *.o sendrecv non_blocking one_sided 
 
 sendrecv: $(SR_OBJFILES) 
 	$(CC) $(LFLAGS) -o $@ $^
