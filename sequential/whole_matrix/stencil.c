@@ -38,7 +38,6 @@ int main(int argc, char **argv){
     init_rand (primary);
   }
 
-  //print_all(primary);
 
   fprintf(stderr,"init finished\n"); 
   iterate(&primary);

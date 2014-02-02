@@ -31,6 +31,27 @@ int main(int argc, char **argv){
   prog = argv[0];
 
   parse_args(argc, argv);
+  
+  //Creating new communicators
+  MPI_Dims_create(p,2,&dims[0]);
+  
+  if (options.m >= options.n){
+    int temp = dims[0];
+    dims[0] = dims[1];
+    dims[1] = temp;
+  }
+  
+  if (p != dims[0]*dims[1]) {
+    fprintf(stderr,"Error: number of PEs %d != %d x %d\n", p, dims[0], dims[1]);
+    MPI_Finalize();
+    exit(-1);
+  }
+  
+  if (options.n % dims[0] != 0 || options.m % dims[1] != 0){
+    fprintf(stderr,"Error: %d or %d does not divide %d or %d\n", dims[0], dims[1], options.n, options.m);
+    MPI_Finalize();
+    exit(-1);
+  }
 
   double *primary = NULL;;
 
@@ -58,26 +79,6 @@ int main(int argc, char **argv){
   MPI_Barrier(MPI_COMM_WORLD);
   
 
-  //Creating new communicators
-  MPI_Dims_create(p,2,&dims[0]);
-  
-  if (options.m >= options.n){
-    int temp = dims[0];
-    dims[0] = dims[1];
-    dims[1] = temp;
-  }
-  
-  if (p != dims[0]*dims[1]) {
-    fprintf(stderr,"Error: number of PEs %d != %d x %d\n", p, dims[0], dims[1]);
-    MPI_Finalize();
-    exit(-1);
-  }
-  
-  if (options.n % dims[0] != 0 || options.m % dims[1] != 0){
-    fprintf(stderr,"Error: number of p does not divide m or n\n");
-    MPI_Finalize();
-    exit(-1);
-  }
 
   int periods[2] = {0,0};
 

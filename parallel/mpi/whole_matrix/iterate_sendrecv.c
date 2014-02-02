@@ -53,6 +53,7 @@ void iterate(double **sub_matrix)
   MPI_Type_create_resized(col2, 0, sizeof(double), &col);
   MPI_Type_commit(&col); 
 
+  MPI_Barrier(MPI_COMM_WORLD);
   if (rank == 0) fprintf(stderr, "init finished\n");
   start = MPI_Wtime();
   for (int i = 0 ; i < options.iter; i++){
@@ -103,6 +104,7 @@ void iterate(double **sub_matrix)
 
 
   }
+  MPI_Barrier(MPI_COMM_WORLD);
   finish = MPI_Wtime();
   if (rank == 0) fprintf(stderr, "loop time = %f\n", finish-start);
   
