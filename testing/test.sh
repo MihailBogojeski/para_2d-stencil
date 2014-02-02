@@ -1,0 +1,96 @@
+
+echo '============== omp ============\n'
+python test.py omp row 8 1 1 123
+python test.py omp column 8 1 1 123
+python test.py omp diagonal 8 1 1 123
+python test.py omp space 8 1 1 123
+python test.py omp row 8  6342 1 412
+python test.py omp diagonal 8  6342 1 34
+python test.py omp column 8  6342 1 234
+python test.py omp space 8  6342 1 123
+python test.py omp row 8 1 6323 122
+python test.py omp diagonal 8 1 6342 34
+python test.py omp column 8 1 6342  234
+python test.py omp space 8 1  6342 123
+python test.py omp row 8 20 3543 121
+python test.py omp diagonal 20 4234 1 34
+python test.py omp column 8  12 2344 234
+python test.py omp space 8  12 3453 123
+python test.py omp row 8  564 2453 234
+python test.py omp diagonal 8 345 3453 635
+python test.py omp column 8 234 3453 344
+python test.py omp space 8  534  2324 343
+python test.py omp row 8  2234 456 234
+python test.py omp diagonal 8 2345 323 34
+python test.py omp column 8  6342 321 234
+python test.py omp space 8  6342 145 123
+python test.py omp row 8  1234 1152 234
+python test.py omp diagonal 8 1245 1452 34
+python test.py omp column 8  1223 1341 234
+python test.py omp space 8  1223 938 123
+echo '============== cilk ============\n'
+python test.py cilk row 8  1 1 112
+python test.py cilk row 8  6342 1 112
+python test.py cilk row 8 1 6323 128
+python test.py cilk row 8 20 3543 132
+python test.py cilk row 8 3523 12 312
+python test.py cilk row 8  564 2453 234
+python test.py cilk row 8  2234 456 234
+python test.py cilk row 8  1234 1152 231
+
+echo '============== mpi ============\n'
+python test.py mpi sendrecv 1  1 1 112
+python test.py mpi sendrecv 1  6342 1 112
+python test.py mpi sendrecv 1 1 6323 128
+python test.py mpi sendrecv 8 20 3540 132
+python test.py mpi sendrecv 8 3520 12 312
+python test.py mpi sendrecv 8  564 2452 234
+python test.py mpi sendrecv 8  2232 456 234
+python test.py mpi sendrecv 8  1232 1152 231
+python test.py mpi sendrecv 16 20 3540 132
+python test.py mpi sendrecv 16 3520 12 312
+python test.py mpi sendrecv 16  564 2452 234
+python test.py mpi sendrecv 16  2232 456 234
+python test.py mpi sendrecv 16  1232 1152 231
+
+python test.py mpi non_blocking 1  1 1 112
+python test.py mpi non_blocking 1  6342 1 112
+python test.py mpi non_blocking 1 1 6323 128
+python test.py mpi non_blocking 8 20 3540 132
+python test.py mpi non_blocking 8 3520 12 312
+python test.py mpi non_blocking 8  564 2452 234
+python test.py mpi non_blocking 8  2232 456 234
+python test.py mpi non_blocking 8  1232 1152 231
+python test.py mpi non_blocking 16 20 3540 132
+python test.py mpi non_blocking 16 3520 12 312
+python test.py mpi non_blocking 16  564 2452 234
+python test.py mpi non_blocking 16  2232 456 234
+python test.py mpi non_blocking 16  1232 1152 231
+
+python test.py mpi one_sided 1  1 1 112
+python test.py mpi one_sided 1  6342 1 112
+python test.py mpi one_sided 1 1 6323 128
+python test.py mpi one_sided 8 20 3540 132
+python test.py mpi one_sided 8 3520 12 312
+python test.py mpi one_sided 8  564 2452 234
+python test.py mpi one_sided 8  2232 456 234
+python test.py mpi one_sided 8  1232 1152 231
+python test.py mpi one_sided 16 20 3540 132
+python test.py mpi one_sided 16 3520 12 312
+python test.py mpi one_sided 16  564 2452 234
+python test.py mpi one_sided 16  2232 456 234
+python test.py mpi one_sided 16  1232 1152 231
+
+python test.py mpi one_sided_get 1  1 1 112
+python test.py mpi one_sided_get 1  6342 1 112
+python test.py mpi one_sided_get 1 1 6323 128
+python test.py mpi one_sided_get 8 20 3540 132
+python test.py mpi one_sided_get 8 3520 12 312
+python test.py mpi one_sided_get 8  564 2452 234
+python test.py mpi one_sided_get 8  2232 456 234
+python test.py mpi one_sided_get 8  1232 1152 231
+python test.py mpi one_sided_get 16 20 3540 132
+python test.py mpi one_sided_get 16 3520 12 312
+python test.py mpi one_sided_get 16  564 2452 234
+python test.py mpi one_sided_get 16  2232 456 234
+python test.py mpi one_sided_get 16  1232 1152 231
