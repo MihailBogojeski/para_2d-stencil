@@ -35,7 +35,7 @@ This operation is not trivial since once a cell is updated, it can no longer be 
  
 \section{Hypothesis}
 
-We want to show that there are different approaches to solving this problem, not every one of them has the same efficiency though. We are comparing varying versions of a few basic methods, while demonstrating that column- and diagonal-based traversals of a matrix do not intertwine readily with the cache-system of the programming language we are basing this experiment on.\\
+We want to show that there are different approaches to solving this problem, not every one of them has the same efficiency though. We are comparing varying versions of a few basic methods, while remarking that column- and diagonal-based traversals of a matrix do not intertwine readily with the cache-system of the programming language we are basing this experiment on.\\
 We further want to show that there are parallel implementations that can achieve speedup nearly linear to the number of cores for large enough instances.
 
 \section{Explanation of the algorithm: 2D-Stencil Computation: }
@@ -45,7 +45,7 @@ The function $f$ that carries out said update on a cell $c$, defined by coordina
 
 
 
-\[  f(x, y) = \frac{a_{(x-1)y} + a_{x_+1)y} + a_{x(y+1)} + a_{x(y-1)}}{4}  \]
+\[  f(x, y) = \frac{a_{(x-1)y} + a_{(x+1)y} + a_{x(y+1)} + a_{x(y-1)}}{4}  \]
 
 In our version of the implementation, the matrix and the boundaries as allocated as one large matrix, with the first and last rows and columns acting
 as the boundaries. So when the algorithm is started for a MxN matrix, the actual allocated matrix has a size of (M+2)x(N+2). Our first implementation had the vectors
@@ -288,7 +288,7 @@ cols = [64, 100, 600, 1000, 5200, 7600, 10000, 30000]
 
 \subsection{Benchmarking results}
 Now we present the results of the MPI benchmarking as plots and just explain these briefly, because we feel that the plots can express more than what we could summarize in a few sentences.
-
+\subsubsection {MPI}
 \begin{center}
 \includegraphics[width=0.7\textwidth]{cmpcxt.png}
 \end{center}
@@ -314,4 +314,45 @@ As we can see, the all the algorithms tend to perform badly for small instances,
 achieved through parallelization, but at the larger instances, the use of a lot of cores starts bringing significant speedups. We can see
 that the time still grows linearly w.r.t. the dataset size(on the larger instances), but the factor is simply a lot smaller than the factor seen
 at the sequential implementation plot.
+
+
+\subsection {CILK \& OMP \& Sequential Space-Opitmized Algorithm }
+\begin{center}
+\includegraphics[width=0.7\textwidth]{compcxtompcilk.png}
+\end{center}
+This graphic allows us to see the what the change in time more (or less cores) cause in different environments, but with the same number of iterations and dimensions.\\
+In OMP we see a tremendous increase in performance as the number of cores increases. This increase in performance has it's peak at 16 cores, then the overhead of the framework trying to parallelize the data weighs it down. \\
+Cilk on the other hand doesn't seem to take much advantage of the number of cores, but also stays stable in comparision, it starts to slow down at a later point and slower rate than OMP, because (as we can see the in the next chart) OMP has a much better speedup rate in general than Cilk.
+
+
+\begin{center}
+\includegraphics[width=0.7\textwidth]{compsxcompcilompcilkseqk.png}
+\end{center}
+This chart shows the actual difference in speedup of both frameworks in processing a certain amount of data. As previously mentioned, the speedup of OMP is much greater, almost linear but with a slowdown factor.\\
+Cilk doesn't have a linear speedup at all and is being rather constant over a greater amount of cores.\\
+The maximal amount of speedup caused by OMP is approximately $\approx4.2x$, caused by 48 cores while the maximal speedup of Cilk is just $\approx1.3x$, also caused by 48 cores, or alternatively 32.
+\begin{center}
+
+
+\includegraphics[width=0.7\textwidth]{compsxtompcilkseq.png}
+\end{center}
+We can see that in this graph the relation of the size of the matrix which has to be computed by our stencil computation and the time that is needed to do such thing.\\
+While the sequential memory-optimized version (called seq\_space in the graph) takes more time but still scales well. \\
+The 'normal' sequential version scales approximately linearily, Cilk has a overhead which reduces the scaling effect on small sample sizes, but it still enables the time to be reduced. OMP scales best of all the versions, a ratio of time/size of $\approx5$.
+
+
+\section{Conclusion}
+First we cannot draw any definite conclusions for the shared-memory implementations on the saturn server because it was overloaded by all other students running their benchmarks, which negatively impacted the performance of our parallel programs. \\
+Still we can conclude that OMP was more suited to out stencil-update problem than Cilk because OMP is data-parallel oriented whereas Cilk is talk-parallel oriented which isn't suited to our problem.\\
+This can also be seen on the benchmarks we did. \\
+Our conclusion regarding the shared-memory parallel frameworks like Cilk and OpenMP is that a good speedup can be achieved up to 16 cores for bigger datasets, but dividing the computation to even more cores will either not change the performance or impact it negatively, because of the synchronization overhead.\\ 
+With the MPI framework on the other hand, manage to achieve a much better speedup as compared to the shared memory frameworks and the speedup kept increasing even when using 256 cores. The benchmarking of the Jupiter distributed system was also easier because we could avoid the trafic created by the other students by executing the benchmarks mostly on the less used nodes of the system. With MPI we manage to achieve out maximal speedup of 84.6 times compare to the fastest sequential algorithm we had.\\
+The speedup however does not include the overhead created when scattering and gathering the matrix. The above mentioned overhead can take most of the computation time when executing the program on large datasets with a small number of iterations so we recommend using the distributed system when the stencil computation requires a large number of iterations.
+For a small number of iterations we would choose to use the OMP-implementation of our 2d-stencil program. 
+
+
+
+
+
+
 \end{document}
