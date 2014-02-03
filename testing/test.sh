@@ -52,6 +52,14 @@ python test.py mpi sendrecv 16 3520 12 312
 python test.py mpi sendrecv 16  564 2452 234
 python test.py mpi sendrecv 16  2232 456 234
 python test.py mpi sendrecv 16  1232 1152 231
+python test.py mpi sendrecv 64 24 3640 132
+python test.py mpi sendrecv 64 3824 16 312
+python test.py mpi sendrecv 64  664 2456 234
+python test.py mpi sendrecv 64  2232 456 234
+python test.py mpi sendrecv 64  1232 1048 231
+python test.py mpi sendrecv 64 8 8 321
+python test.py mpi sendrecv 64 8 2448 345
+python test.py mpi sendrecv 64 1248 8 345
 
 python test.py mpi non_blocking 1  1 1 112
 python test.py mpi non_blocking 1  6342 1 112
@@ -65,7 +73,15 @@ python test.py mpi non_blocking 16 20 3540 132
 python test.py mpi non_blocking 16 3520 12 312
 python test.py mpi non_blocking 16  564 2452 234
 python test.py mpi non_blocking 16  2232 456 234
-python test.py mpi non_blocking 16  1232 1152 231
+python test.py mpi non_blocking 16 20 3540 132
+python test.py mpi non_blocking 64 24 3640 132
+python test.py mpi non_blocking 64 3824 16 312
+python test.py mpi non_blocking 64  664 2456 234
+python test.py mpi non_blocking 64  2232 456 234
+python test.py mpi non_blocking 64  1232 1048 231
+python test.py mpi non_blocking 64 8 8 321
+python test.py mpi non_blocking 64 8 2448 345
+python test.py mpi non_blocking 64 1248 8 345
 
 python test.py mpi one_sided 1  1 1 112
 python test.py mpi one_sided 1  6342 1 112
@@ -79,7 +95,15 @@ python test.py mpi one_sided 16 20 3540 132
 python test.py mpi one_sided 16 3520 12 312
 python test.py mpi one_sided 16  564 2452 234
 python test.py mpi one_sided 16  2232 456 234
-python test.py mpi one_sided 16  1232 1152 231
+python test.py mpi one_sided 16 20 3540 132
+python test.py mpi one_sided 64 24 3640 132
+python test.py mpi one_sided 64 3824 16 312
+python test.py mpi one_sided 64  664 2456 234
+python test.py mpi one_sided 64  2232 456 234
+python test.py mpi one_sided 64  1232 1048 231
+python test.py mpi one_sided 64 8 8 321
+python test.py mpi one_sided 64 8 2448 345
+python test.py mpi one_sided 64 1248 8 345
 
 python test.py mpi one_sided_get 1  1 1 112
 python test.py mpi one_sided_get 1  6342 1 112
@@ -94,3 +118,11 @@ python test.py mpi one_sided_get 16 3520 12 312
 python test.py mpi one_sided_get 16  564 2452 234
 python test.py mpi one_sided_get 16  2232 456 234
 python test.py mpi one_sided_get 16  1232 1152 231
+python test.py mpi one_sided_get 64 24 3640 132
+python test.py mpi one_sided_get 64 3824 16 312
+python test.py mpi one_sided_get 64  664 2456 234
+python test.py mpi one_sided_get 64  2232 456 234
+python test.py mpi one_sided_get 64  1232 1048 231
+python test.py mpi one_sided_get 64 8 8 321
+python test.py mpi one_sided_get 64 8 2448 345
+python test.py mpi one_sided_get 64 1248 8 345

@@ -46,7 +46,7 @@ out, err = p.communicate()
 if err == '' and out == '':
   print 'test successful'
 else:
-  print 'test failed'
+  print 'TEST FAILED!!!!'
 os.remove(input_file)
 os.remove(output_file)
 os.remove(output_file+'_seq')
