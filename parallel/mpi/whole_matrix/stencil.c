@@ -163,9 +163,6 @@ int main(int argc, char **argv){
 
   
 
-  //fprintf(stderr,"init finished\n"); 
-  //TODO call iteration function
-  //fprintf(stderr, "loop finished\n");
   
   if (!options.quiet && rank == 0){
     print_all(primary);

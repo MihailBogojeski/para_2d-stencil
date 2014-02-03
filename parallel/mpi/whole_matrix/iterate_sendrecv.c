@@ -19,35 +19,8 @@ void iterate(double **sub_matrix)
 
   memcpy(secondary, *sub_matrix,(SUB_ROW) * (SUB_COL) * sizeof(double));
   
-  /* for (int proc = 0; proc < p; proc++){
-    if (proc == rank){
-      printf("submatrix:\n");
-      printf("Rank : %d\n", rank);
-      printf("matrix : \n");
-      for(int j = 0; j < SUB_ROW; j++){
-        for(int k = 0; k < SUB_COL; k++){
-          printf("%8.4f ", sub_matrix[j *  (SUB_COL) + k]);
-        }
-        printf("\n");
-      }
-    }
-    MPI_Barrier(MPI_COMM_WORLD);
-  }
-  for (int proc = 0; proc < p; proc++){
-    if (proc == rank){
-      printf("secondary:\n");
-      printf("Rank : %d\n", rank);
-      printf("matrix : \n");
-      for(int j = 0; j < SUB_ROW; j++){
-        for(int k = 0; k < SUB_COL; k++){
-          printf("%8.4f ", secondary[j *  (SUB_COL) + k]);
-        }
-        printf("\n");
-      }
-    }
-    MPI_Barrier(MPI_COMM_WORLD);
-  }*/
 
+  //Create column datatype
   MPI_Datatype col, col2; 
   MPI_Type_vector(SUB_ROW,1,SUB_COL,MPI_DOUBLE, &col2); 
   MPI_Type_create_resized(col2, 0, sizeof(double), &col);
@@ -56,6 +29,8 @@ void iterate(double **sub_matrix)
   MPI_Barrier(MPI_COMM_WORLD);
   if (rank == 0) fprintf(stderr, "init finished\n");
   start = MPI_Wtime();
+
+  //start iterations
   for (int i = 0 ; i < options.iter; i++){
 
     for (int j = 1; j <= sub_rows; j++){
@@ -66,6 +41,7 @@ void iterate(double **sub_matrix)
     swap(sub_matrix, &secondary);
   
     
+    //exchange up
     if (coords[0] > 0){
       int tmp_coords[2] = {coords[0] - 1, coords[1]};
       int tmp_rank = 0;
@@ -75,6 +51,7 @@ void iterate(double **sub_matrix)
           *sub_matrix, SUB_COL, MPI_DOUBLE, tmp_rank, 0, MPI_COMM_WORLD, &status);
     }
 
+    //exchange down
     if (coords[0] < dims[0] - 1){
       int tmp_coords[2] = {coords[0] + 1, coords[1]};
       int tmp_rank = 0;
@@ -84,6 +61,7 @@ void iterate(double **sub_matrix)
           &((*sub_matrix)[(SUB_COL) * (sub_rows + 1)]), SUB_COL, MPI_DOUBLE, tmp_rank, 2, MPI_COMM_WORLD, &status);
     }
 
+    //exchange left
     if (coords[1] > 0){
       int tmp_coords[2] = {coords[0], coords[1] - 1};
       int tmp_rank = 0;
@@ -93,6 +71,7 @@ void iterate(double **sub_matrix)
           *sub_matrix, 1, col, tmp_rank, 3, MPI_COMM_WORLD, &status);
     }
 
+    //exchange right
     if (coords[1] < dims[1] - 1){
       int tmp_coords[2] = {coords[0], coords[1] + 1};
       int tmp_rank = 0;

@@ -13,6 +13,8 @@ void iterate(double **sub_matrix)
   MPI_Comm_size(MPI_COMM_WORLD, &p);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   double *mpi_mem;
+  
+  //initialize window and mpi memory segment
   MPI_Win win;
   MPI_Alloc_mem(2 * (SUB_ROW + SUB_COL) * sizeof(double) , MPI_INFO_NULL, &mpi_mem);
 
@@ -62,36 +64,8 @@ void iterate(double **sub_matrix)
   }
 
   memcpy(secondary, *sub_matrix,(SUB_ROW) * (SUB_COL) * sizeof(double));
-  
-  /* for (int proc = 0; proc < p; proc++){
-    if (proc == rank){
-      printf("submatrix:\n");
-      printf("Rank : %d\n", rank);
-      printf("matrix : \n");
-      for(int j = 0; j < SUB_ROW; j++){
-        for(int k = 0; k < SUB_COL; k++){
-          printf("%8.4f ", sub_matrix[j *  (SUB_COL) + k]);
-        }
-        printf("\n");
-      }
-    }
-    MPI_Barrier(MPI_COMM_WORLD);
-  }
-  for (int proc = 0; proc < p; proc++){
-    if (proc == rank){
-      printf("secondary:\n");
-      printf("Rank : %d\n", rank);
-      printf("matrix : \n");
-      for(int j = 0; j < SUB_ROW; j++){
-        for(int k = 0; k < SUB_COL; k++){
-          printf("%8.4f ", secondary[j *  (SUB_COL) + k]);
-        }
-        printf("\n");
-      }
-    }
-    MPI_Barrier(MPI_COMM_WORLD);
-  }*/
 
+  //Create column datatype
   MPI_Datatype col, col2; 
   MPI_Type_vector(SUB_ROW,1,SUB_COL,MPI_DOUBLE, &col2); 
   MPI_Type_create_resized(col2, 0, sizeof(double), &col);
@@ -100,6 +74,8 @@ void iterate(double **sub_matrix)
   MPI_Barrier(MPI_COMM_WORLD);
   if (rank == 0) fprintf(stderr, "init finished\n");
   start = MPI_Wtime();
+
+  //start iterations
   for (int i = 0 ; i < options.iter; i++){
 
     for (int j = 1; j <= sub_rows; j++){
@@ -116,21 +92,25 @@ void iterate(double **sub_matrix)
     MPI_Win_fence(0,win);
     int get_num = 0;
 
+    //exchange up
     if (coords[0] > 0){
       MPI_Get(*sub_matrix, SUB_COL, MPI_DOUBLE, neigh_ranks[get_num], SUB_COL, SUB_COL, MPI_DOUBLE, win);     
       get_num++;
     }
 
+    //exchange down
     if (coords[0] < dims[0] - 1){
       MPI_Get(&((*sub_matrix)[(SUB_COL) * (sub_rows + 1)]), SUB_COL, MPI_DOUBLE, neigh_ranks[get_num] , 0, SUB_COL, MPI_DOUBLE, win);
       get_num++;
     }
 
+    //exchange left
     if (coords[1] > 0){
       MPI_Get(*sub_matrix, 1, col, neigh_ranks[get_num] , 2*SUB_COL + SUB_ROW, SUB_ROW, MPI_DOUBLE, win);
       get_num++;
     }
 
+    //exchange right
     if (coords[1] < dims[1] - 1){
       MPI_Get(&((*sub_matrix)[sub_cols + 1]), 1, col, neigh_ranks[get_num], 2*SUB_COL, SUB_ROW, MPI_DOUBLE, win);     
       get_num++;
