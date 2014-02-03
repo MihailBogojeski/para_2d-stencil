@@ -39,7 +39,7 @@ We want to show that there are different approaches to solving this problem, not
 We further want to show that there are parallel implementations that can achieve speedup nearly linear to the number of cores for large enough instances.
 
 \section{Explanation of the algorithm: 2D-Stencil Computation: }
-
+\textbf{Location of implementation: parcomp/sequential}\\
 The basic algorithm is simple: The matrix (e.g.: each cell of the matrix) is iteratively being updated by a function as until some condition is met. In this case, we have a certain count of iterations that must be fulfilled until the program is to terminate.
 The function $f$ that carries out said update on a cell $c$, defined by coordinates $x, y$ takes the 4 Neumann neighbors and determines its average:
 
@@ -86,6 +86,8 @@ static void update(double **primary, double **secondary, int j, int k){
 The sequential algorithm is relatively simple and straightforward and we feel that the algorithm doesn't require a formal proof of correctness.
 
 \section{openMP framework implementation}
+\textbf{Location of implementation: parcomp/parallel/openmp}
+
 The openMP implementation was honestly the simplest one to implement on top of our sequential algorithm. The reason for this probably is because our
 the main part of our algorithm consists of a nested loop, which is very simply parallelized by openMP by simply adding the for pragma. We added the for pragma before the 
 row loop, because this way, openMP will also automatically parallelize the nested loop, which brought significantly better performance. We cannot put the for pragma before the
@@ -122,6 +124,7 @@ This way we can update the matrix without interfering with the correctness of th
 
 
 \section{Cilk framework implementation}
+\textbf{Location of implementation: parcomp/parallel/cilk}\\
 Cilk was probably the most ill suited framework to implement our algorithm in. The reason for this is that Cilk is most suited for task-parallelism,
 that is concurrently executing different operations on the same or different datasets. The 2d-stencil computation however, requires data-parallelism,
 that is concurrently executing a single operation over the same dataset. Because of this, the cilk implementation came down to trying to simulate 
@@ -153,6 +156,7 @@ int j, int depth, int min, int max){
 \end{lstlisting}
 
 \section{MPI framework implementation}
+\textbf{Location of implementation: parcomp/parallel/mpi}\\
 For our MPI implementation we made 4 versions of the program to test how 4 different approaches at communication work and how they affect the speedup.
 Our MPI implementation is the only implementation where we place limitations of the size of the matrix. We assume that the number of rows and colums
 are both divisible by the middlemost divisors of the number of cores(middlemost divisors example : The middlemost divisors of 512 are
@@ -279,7 +283,9 @@ Even though by using MPI we achieved by far the best $Cores x Time$ curves, the 
 lets the speedup increase linearly to the number of cores. But for 8, 16, 32 cores in our largest MPI test instances we achieved exactly this, so maybe this approach
 comes as close as possible to achieving our goal.
 
-\section{Correctness/testing} To test for correctness we used our special testing environment and script. For this purpose we created the testing folder which contains
+\section{Correctness/testing}
+\textbf{Location of implementation: parcomp/testing}\\
+To test for correctness we used our special testing environment and script. For this purpose we created the testing folder which contains
 the two test scripts test.py and test.sh, and the objectfiles of all out parallel programs stored in the respective folders. The test.py script simply tests compares the output of
 any parallel algorithm to the output of the sequential row algorithm started with the same arguments. The test.sh scripts simply calls the test.py script for many different instances of the
 parallel programs. The two resulting output files are compared using diff. If this function returns nothing, then both files are completely the same. Otherwise the test is declared as failed. 
@@ -291,6 +297,7 @@ of all its neighbours (the one left and right are have a value of -1 and +1, and
 matrix is initialized as said above, and will should change after any number of updates if the implementation is correct.
 
 \section{Experimental setup/Benchmarks}
+\textbf{Location of data and scripts: parcomp/benchmarks}\\
 Generally we feel that our MPI benchmarks on the jupiter server were a lot more successful than our openmp and cilk benchmarks at the saturn server. The reason for this is the very large traffic on the saturn server during
 the running of our benchmarks. With on jupiter, we largely managed to avoid this traffic by mainly using the last nodes (18,17,16...), because most of the other participants simply started their benchmarks from the first nodes (because of the default login in 0), where the
 traffic was the largest. We sadly had no way of avoiding the traffic on the saturn server, and this is why we feel that our benchmarks don't properly display the actual speedup achieved with our parallel implementations. For this reason, we also made more limited benchmarks locally,
