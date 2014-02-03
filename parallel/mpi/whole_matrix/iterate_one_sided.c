@@ -221,6 +221,8 @@ void iterate(double **sub_matrix)
     free(secondary[i]);
   }*/
   free(secondary);
+  MPI_Win_free(&win);
+  MPI_Free_mem(mpi_mem);
 }
 
 static void update(double *primary, double *secondary, int j, int k){

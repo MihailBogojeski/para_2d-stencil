@@ -8,7 +8,7 @@ static void swap (double **primary, double **secondary);
 void iterate(double **sub_matrix)
 {
   double start, finish;
-  int p, rank;
+  int p, rank, reqs = 0;
   MPI_Comm_size(MPI_COMM_WORLD, &p);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Request requests[8];
@@ -67,7 +67,7 @@ void iterate(double **sub_matrix)
     }
     swap(sub_matrix, &secondary);
   
-    int reqs = 0;    
+    reqs = 0;    
     if (coords[0] > 0){
       int tmp_coords[2] = {coords[0] - 1, coords[1]};
       int tmp_rank = 0;
