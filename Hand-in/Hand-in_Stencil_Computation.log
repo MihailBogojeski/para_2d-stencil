@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2013.3.8)  3 FEB 2014 18:07
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2013.3.8)  3 FEB 2014 18:43
 entering extended mode
  %&-line parsing enabled.
 **Hand-in_Stencil_Computation.tex
@@ -530,6 +530,12 @@ LaTeX Warning: Label `some-code' multiply defined.
 
 LaTeX Warning: Label `some-code' multiply defined.
 
+
+LaTeX Warning: Label `some-code' multiply defined.
+
+
+LaTeX Warning: Label `some-code' multiply defined.
+
 )
 \openout1 = `Hand-in_Stencil_Computation.aux'.
 
@@ -669,94 +675,105 @@ Overfull \hbox (11.22966pt too wide) in paragraph at lines 74--76
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
  []
 
-[2] [3]
-Overfull \hbox (6.0pt too wide) in paragraph at lines 131--131
+[2]
+Overfull \hbox (6.0pt too wide) in paragraph at lines 105--105
 [][][][][][][] 
  []
 
 
-Overfull \hbox (6.0pt too wide) in paragraph at lines 144--144
+Overfull \hbox (4.6596pt too wide) in paragraph at lines 118--119
+[][][][][][][][][][][][][][][][][][][][][] 
+ []
+
+[3]
+Overfull \hbox (6.0pt too wide) in paragraph at lines 134--134
 [][][][][][][] 
  []
 
 
-Overfull \hbox (6.0pt too wide) in paragraph at lines 156--156
-[][][][][][][] 
+Overfull \hbox (11.22966pt too wide) in paragraph at lines 141--142
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
  []
 
 [4]
-Overfull \hbox (6.0pt too wide) in paragraph at lines 181--181
+Overfull \hbox (6.0pt too wide) in paragraph at lines 177--177
 [][][][][][][] 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 187--188
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 190--193
-
- []
-
-
-Overfull \hbox (6.0pt too wide) in paragraph at lines 193--193
+Overfull \hbox (6.0pt too wide) in paragraph at lines 190--190
 [][][][][][][] 
  []
 
-<srcxt.png, id=25, 1284.8pt x 963.6pt>
-File: srcxt.png Graphic file (type png)
- <use srcxt.png> [5 <./srcxt.png (PNG copy)>]
-Overfull \hbox (6.0pt too wide) in paragraph at lines 209--209
+
+Overfull \hbox (6.0pt too wide) in paragraph at lines 202--202
 [][][][][][][] 
  []
 
-<nbcxt.png, id=30, 1284.8pt x 963.6pt>
-File: nbcxt.png Graphic file (type png)
- <use nbcxt.png>
-Overfull \hbox (6.0pt too wide) in paragraph at lines 232--232
+[5]
+Overfull \hbox (6.0pt too wide) in paragraph at lines 227--227
 [][][][][][][] 
  []
 
-[6 <./nbcxt.png (PNG copy)>] <putcxt.png, id=35, 1284.8pt x 963.6pt>
-File: putcxt.png Graphic file (type png)
 
-<use putcxt.png> <getcxt.png, id=36, 1284.8pt x 963.6pt>
-File: getcxt.png Graphic file (type png)
- <use getcxt.png>
-[7 <./putcxt.png (PNG copy)> <./getcxt.png (PNG copy)>]
-Underfull \hbox (badness 10000) in paragraph at lines 268--272
+Underfull \hbox (badness 10000) in paragraph at lines 233--234
 
  []
 
-[8]
-Overfull \hbox (6.0pt too wide) in paragraph at lines 284--284
+
+Underfull \hbox (badness 10000) in paragraph at lines 236--239
+
+ []
+
+
+Overfull \hbox (6.0pt too wide) in paragraph at lines 239--239
 [][][][][][][] 
  []
 
-<cmpcxt.png, id=46, 1284.8pt x 963.6pt>
+
+Overfull \hbox (6.0pt too wide) in paragraph at lines 249--249
+[][][][][][][] 
+ []
+
+[6]
+Overfull \hbox (6.0pt too wide) in paragraph at lines 267--267
+[][][][][][][] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 294--298
+
+ []
+
+[7]
+Overfull \hbox (6.0pt too wide) in paragraph at lines 310--310
+[][][][][][][] 
+ []
+
+<cmpcxt.png, id=36, 1284.8pt x 963.6pt>
 File: cmpcxt.png Graphic file (type png)
- <use cmpcxt.png>
-<cmpsxc.png, id=47, 1284.8pt x 963.6pt>
+ <use cmpcxt.png> [8]
+<cmpsxc.png, id=40, 1284.8pt x 963.6pt>
 File: cmpsxc.png Graphic file (type png)
- <use cmpsxc.png> [9 <./cmpcxt.png (PNG copy)>] <cmpsxt.png, id=52, 1284.8pt x 
-963.6pt>
+ <use cmpsxc.png>
+<cmpsxt.png, id=41, 1284.8pt x 963.6pt>
 File: cmpsxt.png Graphic file (type png)
- <use cmpsxt.png>
-<cmpsxtnoseq.png, id=53, 1284.8pt x 963.6pt>
+ <use cmpsxt.png> [9 <./cmpcxt.png (PNG copy)> <./cmpsxc.png (PNG copy)>] <cmps
+xtnoseq.png, id=47, 1284.8pt x 963.6pt>
 File: cmpsxtnoseq.png Graphic file (type png)
- <use cmpsxtnoseq.png> [10 <./cmpsxc.png (PNG copy)> <./cmpsxt.png (PNG copy)>]
- [11 <./cmpsxtnoseq.png (PNG copy)>] (./Hand-in_Stencil_Computation.aux)
+
+<use cmpsxtnoseq.png> [10 <./cmpsxt.png (PNG copy)> <./cmpsxtnoseq.png (PNG cop
+y)>] (./Hand-in_Stencil_Computation.aux)
 
 LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 5960 strings out of 495061
- 81348 string characters out of 1182622
- 164182 words of memory out of 3000000
- 9034 multiletter control sequences out of 15000+50000
- 49311 words of font info for 39 fonts, out of 3000000 for 9000
+ 5966 strings out of 495061
+ 81398 string characters out of 1182622
+ 163182 words of memory out of 3000000
+ 9043 multiletter control sequences out of 15000+50000
+ 53574 words of font info for 40 fonts, out of 3000000 for 9000
  28 hyphenation exceptions out of 8191
  41i,9n,49p,409b,1574s stack positions out of 5000i,500n,10000p,200000b,50000s
 {/usr/share/texmf/fonts/enc/dvips/lm/lm-ec.enc}{/usr/share/texmf/fonts/enc/dv
@@ -767,10 +784,11 @@ f/fonts/type1/public/lm/lmmi10.pfb></usr/share/texmf/fonts/type1/public/lm/lmmi
 8.pfb></usr/share/texmf/fonts/type1/public/lm/lmr10.pfb></usr/share/texmf/fonts
 /type1/public/lm/lmr12.pfb></usr/share/texmf/fonts/type1/public/lm/lmr6.pfb></u
 sr/share/texmf/fonts/type1/public/lm/lmr8.pfb></usr/share/texmf/fonts/type1/pub
-lic/lm/lmsy10.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy8.pfb>
-Output written on Hand-in_Stencil_Computation.pdf (11 pages, 265497 bytes).
+lic/lm/lmri10.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy10.pfb></usr/shar
+e/texmf/fonts/type1/public/lm/lmsy8.pfb>
+Output written on Hand-in_Stencil_Computation.pdf (10 pages, 253105 bytes).
 PDF statistics:
- 100 PDF objects out of 1000 (max. 8388607)
+ 93 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 41 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 21 words of extra memory for PDF output out of 10000 (max. 10000000)
 
