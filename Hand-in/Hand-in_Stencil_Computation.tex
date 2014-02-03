@@ -99,12 +99,58 @@ We also implemented a space efficient version of the algorithm, where the space 
 2 times slower for the sequential version (compared to the row-wise sequential version) and a lot slower than the parallel version when using a large number of cores. The reason for the performance loss
 in the sequential case is due to the additional write operations that occur after every row is iterated, and in the parallel case additionally because of the decreased parallelization of the algorithm (only the rows
 are parallelizable internally, because a write operation happens after each row). We sadly could only benchmark the sequential space algorithm, because the traffic on saturn made the parallel version too slow even for small instances.\\
-The algorithm can be explained as follows
+The algorithm can be explained as follows: we allocate two buffer arrays that have the length of one row of the matrix. In each odd numbered row we write the updates to the first of these arrays and copy the values in the second array to the row before that.
+The algorithm works in an analog manner for the ever numbered rows. Because we always write the buffer array to the previous row after the row iteration is finished, the row gets its update value only after it is no longer relevant to the result for the current iteration.
+This way we can update the matrix without interfering with the correctness of the algorithm. The same process repeats for every iteration.
+\begin{lstlisting}[label=some-code, caption=Space efficient iteration loop]
 
+ for (int i = 0; i < options.iter; i++){
+    for(int j = 1; j <= options.n; j++){
+      for(int k = 1; k <= options.m; k++){
+        update(*primary, tmp_rows[(j+1)%2], j, k);
+      }
+      if (j > 1) {
+        memcpy(&((*primary)[j-1][1]),&tmp_rows[(j)%2][1], 
+            options.m * sizeof(double));
+      }
+    }
+    memcpy(&((*primary)[options.n][1]),
+           &tmp_rows[(options.n+1)%2][1], options.m * sizeof(double));
+  }
 
+\end{lstlisting}
 
 
 \section{Cilk framework implementation}
+Cilk was probably the most ill suited framework to implement our algorithm in. The reason for this is that Cilk is most suited for task-parallelism,
+that is concurrently executing different operations on the same or different datasets. The 2d-stencil computation however, requires data-parallelism,
+that is concurrently executing a single operation over the same dataset. Because of this, the cilk implementation came down to trying to simulate 
+data-parallelism on a task-parallel framework, which naturally resulted in a not very efficient implementation.\\
+Our algorithm works as follows: we define the update operations over a single row to be one task, which basically allows us to parallelize the update of each row.
+To increase the parallelization, in the (unlikely) case that the number of processors available is larger than the number of rows (initial tasks), we further split
+every row in half make the half-row a single task, so we get twice as many tasks. We repeat the process to double the tasks until the total number of tasks is larger than the
+number of available processors. This way we always have more waiting tasks than processors (unless the number of processors is larger than rows*columns), which allows for a better
+parallelization of the algorithm. But this case rarely occurs, and as seen below in the benchmarks section, the cilk implementation is barely more efficient than the sequential algorithm
+\begin{lstlisting}[label=some-code, caption=The data-parallel update task]
+cilk static void update_chunk(double **primary, double **secondary, 
+int j, int depth, int min, int max){ 
+  int k;
+  int chunk_value = options.m/(8*Cilk_active_size) + 1; 
+  int chunksize = min(2048, chunk_value);
+  //split not required
+  if (Cilk_active_size < (options.n * depth) || max-min < chunksize*2){ 
+    for(k = min; k < max; k++){
+      update(primary, secondary, j, k);
+    }
+  }
+  //the row is further split into 2 tasks
+  else{
+    int mid = (min + max)/2;   
+    spawn update_chunk(primary, secondary, j, depth+1, min, mid);
+    spawn update_chunk(primary, secondary, j, depth+1, mid, max);
+  }
+}
+\end{lstlisting}
 
 \section{MPI framework implementation}
 For our MPI implementation we made 4 versions of the program to test how 4 different approaches at communication work and how they affect the speedup.
@@ -196,12 +242,6 @@ MPI_Sendrecv (&((*sub_matrix)[1]), 1, col, tmp_rank, 1,
     *sub_matrix, 1, col, tmp_rank, 3, MPI_COMM_WORLD, &status);
 
 \end{lstlisting}
-\begin{center}
-\includegraphics[width=0.7\textwidth]{srcxt.png}
-\end{center}
-
-As one can see from the graph, the MPI\_Sendrecv implementation behaves quite nicely with a rising number of cores. The curve looks similar to
-the 1/n curve, but the time doesnt exactly halve with a doubled number of cores.
 
 \subsection{Non-Blocking exchange}
 The non blocking algorithm works in the same way as the sendrecv implementation, with the only difference that it uses the non-blocking $MPI\_Isend$
@@ -217,11 +257,6 @@ MPI_Waitall(reqs,requests,statuses);
 
 \end{lstlisting}
 
-\begin{center}
-\includegraphics[width=0.7\textwidth]{nbcxt.png}
-\end{center}
-
-With respect to the dependency of the time to the number of cores, the curve here also behaves similarly to the one in the sendrecv implementation.
 
 \subsection{MPI\_Put and MPI\_Get exchange}
 Although it was not required, we also implemented a one-sided version of the exchange using MPI\_Get, to test how it would affect the performance 
@@ -239,15 +274,6 @@ MPI_Get(*sub_matrix, 1, col, neigh_ranks[get_num],
 
 \end{lstlisting}
 
-\begin{center}
-\includegraphics[width=0.7\textwidth]{putcxt.png}
-\end{center}
-\begin{center}
-\includegraphics[width=0.7\textwidth]{getcxt.png}
-\end{center}
-
-As seen from the graphs, the $Time x Cores$ curve from the get and put implementations behave roughly the same as the other MPI implementations.
-The slight rise in the MPI\_Get curve was likely caused by temporarily increased traffic at the jupiter server.
 \subsection{MPI conclusion} 
 Even though by using MPI we achieved by far the best $Cores x Time$ curves, the results still didn't exactly fit our hypothesis that there is an implementation that
 lets the speedup increase linearly to the number of cores. But for 8, 16, 32 cores in our largest MPI test instances we achieved exactly this, so maybe this approach

@@ -14,6 +14,7 @@ void iterate(double **sub_matrix)
   MPI_Comm_size(MPI_COMM_WORLD, &p);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   double *mpi_mem;
+  //initialize window and mpi memory segment
   MPI_Win win;
   MPI_Alloc_mem(2 * (SUB_ROW + SUB_COL) * sizeof(double) , MPI_INFO_NULL, &mpi_mem);
   
@@ -55,16 +56,6 @@ void iterate(double **sub_matrix)
     num_neigh++;
   }
 
-  /*for (int proc = 0; proc < p; proc ++){
-    if (rank == proc){
-      printf("Rank = %d\n", rank);
-      for (int i = 0; i < num_neigh; i++){
-        printf("neigh %d = %d\t",i,neigh_ranks[i]);
-      }
-      printf("\n\n");
-    }
-    MPI_Barrier(MPI_COMM_WORLD);
-  }*/
 
   MPI_Group_incl(world, num_neigh, neigh_ranks, &neighbours);
 
@@ -75,35 +66,7 @@ void iterate(double **sub_matrix)
 
   memcpy(secondary, *sub_matrix,(SUB_ROW) * (SUB_COL) * sizeof(double));
   
-  /* for (int pr)c = 0; proc < p; proc++){
-    if (proc == rank){
-      printf("submatrix:\n");
-      printf("Rank : %d\n", rank);
-      printf("matrix : \n");
-      for(int j = 0; j < SUB_ROW; j++){
-        for(int k = 0; k < SUB_COL; k++){
-          printf("%8.4f ", sub_matrix[j *  (SUB_COL) + k]);
-        }
-        printf("\n");
-      }
-    }
-    MPI_Barrier(MPI_COMM_WORLD);
-  }
-  for (int proc = 0; proc < p; proc++){
-    if (proc == rank){
-      printf("secondary:\n");
-      printf("Rank : %d\n", rank);
-      printf("matrix : \n");
-      for(int j = 0; j < SUB_ROW; j++){
-        for(int k = 0; k < SUB_COL; k++){
-          printf("%8.4f ", secondary[j *  (SUB_COL) + k]);
-        }
-        printf("\n");
-      }
-    }
-    MPI_Barrier(MPI_COMM_WORLD);
-  }*/
-
+  //Create column datatype
   MPI_Datatype col, col2; 
   MPI_Type_vector(SUB_ROW,1,SUB_COL,MPI_DOUBLE, &col2); 
   MPI_Type_create_resized(col2, 0, sizeof(double), &col);
@@ -112,6 +75,8 @@ void iterate(double **sub_matrix)
   MPI_Barrier(MPI_COMM_WORLD);
   if (rank == 0) fprintf(stderr, "init finished\n");
   start = MPI_Wtime();
+  
+  //start iterations
   for (int i = 0 ; i < options.iter; i++){
 
     for (int j = 1; j <= sub_rows; j++){
@@ -122,71 +87,43 @@ void iterate(double **sub_matrix)
     swap(sub_matrix, &secondary);
   
  
-    //printf("before win start rank = %d\n", rank);
     //MPI_Win_start(neighbours, 0, win);
     //MPI_Win_post(neighbours, 0, win);
     MPI_Win_fence(0,win);
-    //printf("after win start rank = %d\n", rank);
     int get_num = 0;
 
+    //exchange up
     if (coords[0] > 0){
       MPI_Put(&((*sub_matrix)[SUB_COL]), SUB_COL, MPI_DOUBLE, neigh_ranks[get_num], SUB_COL, SUB_COL, MPI_DOUBLE, win);
       get_num++;
     }
 
+    //exchange down
     if (coords[0] < dims[0] - 1){
       MPI_Put(&((*sub_matrix)[(SUB_COL) * (sub_rows)]), SUB_COL, MPI_DOUBLE, neigh_ranks[get_num] , 0, SUB_COL, MPI_DOUBLE, win);
       get_num++;
     }
 
+    //exchange left
     if (coords[1] > 0){
       MPI_Put(&((*sub_matrix)[1]), 1, col, neigh_ranks[get_num] , 2*SUB_COL + SUB_ROW, SUB_ROW, MPI_DOUBLE, win);
       get_num++;
     }
 
+    //exchange right
     if (coords[1] < dims[1] - 1){
       MPI_Put(&((*sub_matrix)[sub_cols]), 1, col, neigh_ranks[get_num], 2*SUB_COL, SUB_ROW, MPI_DOUBLE, win);     
       get_num++;
     }
 
 
-    //printf("before win complete rank = %d\n", rank);
     //MPI_Win_wait(win);
     //MPI_Win_complete(win);
     
     MPI_Win_fence(0,win);
-    //printf("after win complete rank = %d\n", rank);
     
     update_bound(mpi_mem, *sub_matrix);
     
-    /*for (int proc = 0; proc < p; proc++){
-      if (proc == rank){
-        printf("\n\n");
-        printf("Rank : %d\n", rank);
-        printf("matrix : \n");
-        for(int j = 0; j < SUB_ROW; j++){
-          for(int k = 0; k < SUB_COL; k++){
-            printf("%8d ", (int)(*sub_matrix)[j *  (SUB_COL) + k]);
-          }
-          printf("\n");
-        }
-        printf("memory:\n");
-        for(int j = 0; j < 2; j++){
-          for(int k = 0; k< SUB_COL; k++){
-            printf("%8d ", (int)mpi_mem[j *  (SUB_COL) + k]);
-          }
-          printf("\n");
-        }
-        for(int j = 0; j < 2; j++){
-          for(int k = 0; k< SUB_ROW; k++){
-            printf("%8d ", (int)mpi_mem[2*SUB_COL + j*(SUB_ROW) + k]);
-          }
-          printf("\n");
-        }
-        printf("\n");
-      }
-      MPI_Barrier(MPI_COMM_WORLD);
-    }*/
   }
   MPI_Barrier(MPI_COMM_WORLD);
   finish = MPI_Wtime();
@@ -195,31 +132,6 @@ void iterate(double **sub_matrix)
   if (rank == 0) fprintf(stderr, "loop finished\n");
 
   
-  /*  start = omp_get_wtime();
-  for (int i = 0; i < options.iter; i++){
-    for(int j = 0; j < options.n; j++){
-      for(int k = 0; k < options.m; k++){
-        update(primary, secondary, j, k, vectors);
-      }
-    }
-    swap(&primary, &secondary);
-  }
-  finish = omp_get_wtime();
-  
-  double usec_diff = finish - start;
-  fprintf(stderr,"loop time = %f\n", usec_diff);
-  
-  if (options.iter % 2 == 1){
-    double **temp = primary;
-    primary = secondary;
-    secondary = temp;
-    for (int i = 0; i < options.n; i++){
-      memcpy(primary[i],secondary[i],options.m * sizeof(double));
-    } 
-  } 
-  for (int i = 0; i < options.n; i++){
-    free(secondary[i]);
-  }*/
   free(secondary);
   MPI_Win_free(&win);
   MPI_Free_mem(mpi_mem);

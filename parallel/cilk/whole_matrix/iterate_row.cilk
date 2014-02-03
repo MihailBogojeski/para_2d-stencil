@@ -61,19 +61,16 @@ static void update(double **primary, double **secondary, int j, int k){
   secondary[j][k] = sum/(double)4;
 }
 
-cilk static void update_chunk(double **primary, double **secondary, int j, int depth, int min, int max){
-  int k;
+cilk static void update_chunk(double **primary, double **secondary, int j, int depth, int min, int max){ int k;
   int chunk_value = options.m/(8*Cilk_active_size) + 1; 
   int chunksize = min(2048, chunk_value);
-  //printf("length = %d, 8* processors = %d\n", options.m, 8*Cilk_active_size);
-  //printf("processors = %d, chunk_value = %d, chunksize = %d\n", Cilk_active_size, chunk_value, chunksize);
-  //printf("row = %d, min = %d, max = %d\n", j ,min, max);
+  //split not required
   if (Cilk_active_size < (options.n * depth) || max-min < chunksize*2){ 
-    //printf("processors = %d, rows = %d\n", Cilk_active_size, options.n * depth);
     for(k = min; k < max; k++){
       update(primary, secondary, j, k);
     }
   }
+  //the row is further split into 2 tasks
   else{
     int mid = (min + max)/2;   
     spawn update_chunk(primary, secondary, j, depth+1, min, mid);
